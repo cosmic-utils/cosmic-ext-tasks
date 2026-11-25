@@ -122,6 +122,7 @@ pub fn key_binds() -> HashMap<KeyBind, MenuAction> {
     bind!([], Key::Named(Named::Delete), DeleteList);
     bind!([], Key::Named(Named::F2), RenameList);
     bind!([Ctrl, Shift], Key::Character("i".into()), Icon);
+    bind!([Ctrl, Shift], Key::Character("a".into()), Accounts);
     bind!([Ctrl], Key::Character("q".into()), WindowClose);
     bind!([Ctrl, Shift], Key::Character("n".into()), WindowNew);
     bind!([Ctrl], Key::Character(",".into()), Settings);

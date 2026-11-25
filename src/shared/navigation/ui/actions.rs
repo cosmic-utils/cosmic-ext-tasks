@@ -8,6 +8,7 @@ use crate::app::{ContextPage, Message};
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MenuAction {
     About,
+    Accounts,
     DeleteList,
     Icon,
     NewList,
@@ -40,6 +41,7 @@ impl Action for MenuAction {
     fn message(&self) -> Self::Message {
         match self {
             MenuAction::About => Message::ToggleContextPage(ContextPage::About),
+            MenuAction::Accounts => Message::ToggleContextPage(ContextPage::Accounts),
             MenuAction::Settings => Message::ToggleContextPage(ContextPage::Settings),
             action => Message::Menu(*action),
         }

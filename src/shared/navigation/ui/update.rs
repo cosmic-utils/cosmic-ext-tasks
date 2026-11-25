@@ -94,6 +94,9 @@ impl AppModel {
             MenuAction::About => {
                 return cosmic::task::message(Message::ToggleContextPage(ContextPage::About));
             }
+            MenuAction::Accounts => {
+                return cosmic::task::message(Message::ToggleContextPage(ContextPage::Accounts));
+            }
             MenuAction::DeleteList => {
                 return cosmic::task::message(Message::Dialog(DialogAction::Open(
                     DialogPage::DeleteList(None, String::new()),

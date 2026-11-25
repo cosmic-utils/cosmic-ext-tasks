@@ -3,7 +3,6 @@ use crate::fl;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ContextPage {
     About,
-    #[allow(unused)]
     Accounts,
     Settings,
     TaskDetails,
