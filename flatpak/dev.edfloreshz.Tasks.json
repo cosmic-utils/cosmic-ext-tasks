@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/flatpak/flatpak-builder/main/data/flatpak-manifest.schema.json",
   "id": "dev.edfloreshz.Tasks",
   "runtime": "org.freedesktop.Platform",
-  "runtime-version": "25.08",
+  "runtime-version": "26.08",
   "base": "com.system76.Cosmic.BaseApp",
   "base-version": "stable",
   "sdk": "org.freedesktop.Sdk",
@@ -41,7 +41,8 @@
       "sources": [
         {
           "type": "dir",
-          "path": "."
+          "path": "..",
+          "skip": [".cargo", ".git", ".flatpak-builder", "dist", "target", "vendor", "vendor.tar"]
         },
         "cargo-sources.json"
       ]

@@ -16,6 +16,7 @@ target/
 /.idea
 /.vscode
 /.flatpak-builder
+/dist/
 /flatpak_build
 /build_dir
 **/.venv
