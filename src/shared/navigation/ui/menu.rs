@@ -105,6 +105,11 @@ pub fn menu_bar<'a>(state: &AppModel) -> Element<'a, Message> {
                     ),
                     Item::Divider,
                     Item::Button(
+                        fl!("menu-accounts"),
+                        None,
+                        MenuAction::Accounts,
+                    ),
+                    Item::Button(
                         fl!("menu-settings"),
                         None,
                         MenuAction::Settings,

@@ -1,13 +1,21 @@
 use cosmic::{widget, Element};
 
 use crate::{
-    app::{AppModel, Message},
+    app::{AppModel, ContextPage, Message},
     fl,
     shared::navigation::ui::{ApplicationAction, MenuAction},
 };
 
 pub fn settings(app: &AppModel) -> Element<'_, Message> {
     widget::scrollable(widget::column::with_children(vec![
+        widget::settings::section()
+            .title(fl!("accounts"))
+            .add(widget::settings::item::item(
+                fl!("manage-accounts"),
+                widget::button::standard(fl!("open"))
+                    .on_press(Message::ToggleContextPage(ContextPage::Accounts)),
+            ))
+            .into(),
         widget::settings::section()
             .title(fl!("appearance"))
             .add(widget::settings::item::item(
