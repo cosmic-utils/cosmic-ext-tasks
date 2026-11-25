@@ -6,6 +6,6 @@ pub mod update;
 pub mod views;
 
 pub use action::AccountsAction;
-pub use nav::{account_label, provider_icon, AccountHeaderMarker};
+pub use nav::{account_label, AccountHeaderMarker};
 
 pub(crate) use manager::{list, token};

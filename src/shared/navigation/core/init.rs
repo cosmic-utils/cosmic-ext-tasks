@@ -45,6 +45,8 @@ impl AppModel {
             key_binds: key_binds(),
             modifiers: Modifiers::empty(),
             nav: nav_model,
+            sidebar: widget::segmented_button::ModelBuilder::default().build(),
+            collapsed_accounts: std::collections::HashSet::new(),
             account_auth: None,
             account_adding: false,
             remote_accounts: Vec::new(),
@@ -80,6 +82,7 @@ impl AppModel {
             app.show_favorites_nav_item();
         }
 
+        app.refresh_sidebar();
         (app, app::Task::batch(tasks))
     }
 

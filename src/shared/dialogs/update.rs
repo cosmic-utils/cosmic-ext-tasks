@@ -81,7 +81,7 @@ impl AppModel {
                             match Time::new(hour as i8, minute as i8, 0, 0) {
                                 Ok(time) => {
                                     let dt = DateTime::from_parts(date, time);
-                                    match dt.to_zoned(jiff::tz::TimeZone::system()) {
+                                    match dt.to_zoned_datetime(jiff::tz::TimeZone::system()) {
                                         Ok(zoned) => {
                                             self.details.update(details::Message::SetReminder(
                                                 zoned.timestamp(),

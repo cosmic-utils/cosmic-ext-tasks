@@ -14,7 +14,7 @@ use crate::{
     features::{
         accounts,
         favorites::{self, FavoritesMarker},
-        lists::{content, List},
+        lists::{List, content},
         reminders::reminder,
         tasks::{self, details},
         trash::{self, TrashMarker},
@@ -91,7 +91,10 @@ impl Application for AppModel {
     }
 
     fn nav_context_menu(&self) -> Option<Vec<widget::menu::Tree<cosmic::Action<Self::Message>>>> {
-        let items = self.nav.iter().map(|entity| {
+        let items = self.sidebar.iter().map(|row| {
+            let Some(&entity) = self.sidebar.data::<Entity>(row) else {
+                return Vec::new();
+            };
             let favorites_index_opt = self.nav.data::<FavoritesMarker>(entity);
             let trash_index_opt = self.nav.data::<TrashMarker>(entity);
             let mut items: Vec<widget::menu::Item<NavMenuAction, String>> = Vec::with_capacity(7);
@@ -115,7 +118,9 @@ impl Application for AppModel {
                     ),
                     NavMenuAction::TrashEmptyAll,
                 ));
-            } else if favorites_index_opt.is_some() {
+            } else if favorites_index_opt.is_some()
+                || self.nav.data::<accounts::AccountHeaderMarker>(entity).is_some()
+            {
                 return items;
             } else {
                 items.push(cosmic::widget::menu::Item::Button(
@@ -161,7 +166,7 @@ impl Application for AppModel {
     }
 
     fn nav_model(&self) -> Option<&widget::segmented_button::SingleSelectModel> {
-        Some(&self.nav)
+        Some(&self.sidebar)
     }
 
     fn on_escape(&mut self) -> app::Task<Self::Message> {
@@ -177,45 +182,24 @@ impl Application for AppModel {
         app::Task::none()
     }
 
-    fn on_nav_select(&mut self, entity: Entity) -> app::Task<Self::Message> {
-        if self
-            .nav
-            .data::<accounts::AccountHeaderMarker>(entity)
-            .is_some()
-        {
+    fn on_nav_select(&mut self, row: Entity) -> app::Task<Self::Message> {
+        let Some(&entity) = self.sidebar.data::<Entity>(row) else {
+            return app::Task::none();
+        };
+        if let Some(&accounts::AccountHeaderMarker(id)) = self.nav.data(entity) {
+            if !self.collapsed_accounts.remove(&id) {
+                self.collapsed_accounts.insert(id);
+            }
+            if self.core.is_condensed() {
+                self.core.nav_bar_toggle_condensed();
+            }
+            self.refresh_sidebar();
             return app::Task::none();
         }
 
-        let mut tasks = vec![];
-        self.nav.activate(entity);
-
-        if self.nav.data::<FavoritesMarker>(entity).is_some() {
-            let _ = self.update(Message::Content(content::Message::SetList(None)));
-            return self.update(Message::Favorites(favorites::favorites::Message::Load));
-        }
-
-        if self.nav.data::<TrashMarker>(entity).is_some() {
-            return app::Task::batch(vec![
-                self.update(Message::Content(content::Message::SetList(None))),
-                self.update(Message::Trash(trash::trash::Message::Load)),
-            ]);
-        }
-
-        let location_opt = self.nav.data::<List>(entity);
-
-        if let Some(list) = location_opt {
-            if let Err(err) = self.config.set_last_list_id(&self.handler, Some(list.id)) {
-                tracing::error!("{err}");
-            }
-            let message = Message::Content(content::Message::SetList(Some(list.clone())));
-            let window_title = format!("{} - {}", list.name, fl!("tasks"));
-            if let Some(window_id) = self.core.main_window_id() {
-                tasks.push(self.set_window_title(window_title, window_id));
-            }
-            return self.update(message);
-        }
-
-        app::Task::batch(tasks)
+        let task = self.select_nav_entity(entity);
+        self.refresh_sidebar();
+        task
     }
 
     fn subscription(&self) -> Subscription<Self::Message> {
@@ -269,6 +253,65 @@ impl Application for AppModel {
     }
 
     fn update(&mut self, message: Self::Message) -> app::Task<Self::Message> {
+        let task = self.update_message(message);
+        self.refresh_sidebar();
+        task
+    }
+
+    fn view(&self) -> Element<'_, Self::Message> {
+        let content = if self.search.has_query() && self.search.is_global() {
+            self.search.view().map(Message::Search)
+        } else if self.nav.active_data::<TrashMarker>().is_some() {
+            self.trash.view().map(Message::Trash)
+        } else if self.nav.active_data::<FavoritesMarker>().is_some() {
+            self.favorites.view().map(Message::Favorites)
+        } else {
+            self.content.view(self.search.query()).map(Message::Content)
+        };
+
+        if self.core.window.show_context {
+            content
+        } else {
+            widget::toaster(&self.toasts, content)
+        }
+    }
+}
+
+impl AppModel {
+    pub(crate) fn select_nav_entity(&mut self, entity: Entity) -> app::Task<Message> {
+        let mut tasks = vec![];
+        self.nav.activate(entity);
+
+        if self.nav.data::<FavoritesMarker>(entity).is_some() {
+            let _ = self.update(Message::Content(content::Message::SetList(None)));
+            return self.update(Message::Favorites(favorites::favorites::Message::Load));
+        }
+
+        if self.nav.data::<TrashMarker>(entity).is_some() {
+            return app::Task::batch(vec![
+                self.update(Message::Content(content::Message::SetList(None))),
+                self.update(Message::Trash(trash::trash::Message::Load)),
+            ]);
+        }
+
+        let location_opt = self.nav.data::<List>(entity);
+
+        if let Some(list) = location_opt {
+            if let Err(err) = self.config.set_last_list_id(&self.handler, Some(list.id)) {
+                tracing::error!("{err}");
+            }
+            let message = Message::Content(content::Message::SetList(Some(list.clone())));
+            let window_title = format!("{} - {}", list.name, fl!("tasks"));
+            if let Some(window_id) = self.core.main_window_id() {
+                tasks.push(self.set_window_title(window_title, window_id));
+            }
+            return self.update(message);
+        }
+
+        app::Task::batch(tasks)
+    }
+
+    fn update_message(&mut self, message: Message) -> app::Task<Message> {
         match message {
             Message::Accounts(action) => {
                 return self.update_accounts(action);
@@ -369,14 +412,14 @@ impl Application for AppModel {
                         details::Output::OpenReminderDialog => {
                             let (cal, hour, minute) =
                                 if let Some(ts) = self.details.task.reminder_date {
-                                    let zoned = ts.to_zoned(jiff::tz::TimeZone::system());
+                                    let zoned = ts.to_zoned_datetime(jiff::tz::TimeZone::system());
                                     let date = zoned.date();
                                     let h = zoned.hour() as u32;
                                     let m = zoned.minute() as u32;
                                     (CalendarModel::new(date, date), h, m)
                                 } else {
                                     let now = jiff::Timestamp::now()
-                                        .to_zoned(jiff::tz::TimeZone::system());
+                                        .to_zoned_datetime(jiff::tz::TimeZone::system());
                                     let date = now.date();
                                     (
                                         CalendarModel::new(date, date),
@@ -583,26 +626,6 @@ impl Application for AppModel {
         app::Task::none()
     }
 
-    fn view(&self) -> Element<'_, Self::Message> {
-        let content = if self.search.has_query() && self.search.is_global() {
-            self.search.view().map(Message::Search)
-        } else if self.nav.active_data::<TrashMarker>().is_some() {
-            self.trash.view().map(Message::Trash)
-        } else if self.nav.active_data::<FavoritesMarker>().is_some() {
-            self.favorites.view().map(Message::Favorites)
-        } else {
-            self.content.view(self.search.query()).map(Message::Content)
-        };
-
-        if self.core.window.show_context {
-            content
-        } else {
-            widget::toaster(&self.toasts, content)
-        }
-    }
-}
-
-impl AppModel {
     pub(crate) fn toast(&mut self, message: String) -> app::Task<Message> {
         self.toasts
             .push(widget::Toast::new(message))
