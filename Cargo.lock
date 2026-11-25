@@ -104,6 +104,7 @@ dependencies = [
 [[package]]
 name = "accounts"
 version = "0.1.0"
+source = "git+https://github.com/cosmic-utils/accounts#f3d7d6c7344aa69646ff3758ef96f15a8c2817d0"
 dependencies = [
  "ashpd 0.12.3",
  "async-trait",

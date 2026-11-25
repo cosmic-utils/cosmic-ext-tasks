@@ -32,7 +32,7 @@ reqwest = { version = "0.12", default-features = false, features = [
 serde_json = "1"
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
-accounts = { path = "../cosmic-ext-accounts/crates/accounts", package = "accounts", features = ["tasks", "libcosmic"] }
+accounts = { git = "https://github.com/cosmic-utils/accounts", features = ["tasks", "libcosmic"] }
 
 [dependencies.rust-extensions]
 git = "https://github.com/edfloreshz/rust-extensions.git"
