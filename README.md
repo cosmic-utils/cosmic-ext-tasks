@@ -34,10 +34,10 @@ library owns the account records and encrypted credentials inside Tasks; no sepa
 installation, daemon, or consent app is required. Use **Reconnect** to refresh approval,
 **Remove** to delete an account and its credentials, and the toggle to pause or resume sync.
 
-OAuth client registrations are supplied by the packager, not committed to this repository. Set
-`ACCOUNTS_GOOGLE_TASKS_CLIENT_ID` and `ACCOUNTS_MICROSOFT_TASKS_CLIENT_ID` before launching Tasks.
-For registrations that require a secret, also set the matching `_CLIENT_SECRET`; desktop clients
-may use PKCE without a secret.
+Tasks ships with Google and Microsoft desktop OAuth registrations. To use a custom
+registration, set `ACCOUNTS_GOOGLE_TASKS_CLIENT_ID` or `ACCOUNTS_MICROSOFT_TASKS_CLIENT_ID`
+before launching Tasks. If the custom registration requires a secret, also set the matching
+`_CLIENT_SECRET`.
 
 Sign-in fails entirely if secure storage is unavailable or locked; credentials are never stored
 in plaintext or kept only in memory.
