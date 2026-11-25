@@ -40,14 +40,8 @@ impl AppModel {
                 self.accounts_loaded_once = true;
                 self.remote_accounts = accounts.clone();
 
-                // Accounts that are deleted or disabled in the embedded store
-                // lose their mirrored lists, regardless of Tasks' local pause
-                // switch. That switch only pauses sync; it never keeps data.
                 let active = active_ids(&accounts);
 
-                // An account that just became active starts syncing without
-                // also requiring the local toggle. Skipped on the first load
-                // so existing local preferences survive app startup.
                 if !is_first_load {
                     let newly_active: Vec<uuid::Uuid> =
                         active.difference(&previously_active).copied().collect();

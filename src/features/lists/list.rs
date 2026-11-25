@@ -13,7 +13,6 @@ pub struct List {
     pub icon: Option<String>,
     pub id: Uuid,
     pub name: String,
-    /// Local (default) or mirrored from a remote Google/Microsoft account.
     #[serde(default)]
     pub source: TaskSource,
 }

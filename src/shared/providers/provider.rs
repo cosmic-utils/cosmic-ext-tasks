@@ -18,14 +18,7 @@ pub enum ProviderError {
 
 pub type ProviderResult<T> = Result<T, ProviderError>;
 
-/// Provider-agnostic remote task backend. Implementors talk directly to the
-/// Google Tasks API / Microsoft Graph To Do API over HTTP; callers are
-/// responsible for obtaining a valid access token from the embedded accounts
-/// manager before calling any method here.
-/// List create/update/delete are part of the provider contract but unused by
-/// the current sync engine, which only auto-creates lists on pull and never
-/// auto-creates/renames/deletes remote lists from local changes (see
-/// `sync.rs`); kept here for a future milestone and for provider symmetry.
+/// Provider-agnostic remote task backend.
 #[allow(dead_code)]
 #[async_trait::async_trait]
 pub trait RemoteTaskProvider: Send + Sync {

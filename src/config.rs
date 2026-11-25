@@ -13,14 +13,8 @@ pub const CONFIG_VERSION: u64 = 1;
 #[version = 1]
 pub struct AppConfig {
     pub app_theme: AppTheme,
-
-    /// Accounts the user has paused *within Tasks only* (e.g. via the
-    /// Accounts page toggle). This is local app state, separate from the
-    /// account's enabled state in Tasks' embedded account store. An account
-    /// absent from this set is synced by default while it remains enabled.
     #[serde(default)]
     pub disabled_accounts: BTreeSet<Uuid>,
-
     pub hide_completed: bool,
     pub last_list_id: Option<Uuid>,
     pub list_sort_by: ListSortBy,

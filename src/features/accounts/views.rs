@@ -32,9 +32,6 @@ impl AppModel {
 }
 
 /// Accounts page rendered inside Tasks' dedicated context drawer.
-///
-/// The shared panel keeps the provider picker and browser sign-in wait state
-/// narrow enough for the drawer. Tasks adds only its local sync controls.
 pub fn page(app: &AppModel) -> Element<'_, Message> {
     let rows: Vec<AccountRow<'_>> = app
         .remote_accounts

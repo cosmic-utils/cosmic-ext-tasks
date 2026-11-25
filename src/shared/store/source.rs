@@ -1,10 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-/// Where a `List`/`Task` originates from: created locally, or mirrored from a
-/// remote account. `remote_id` is the provider's opaque list/task identifier;
-/// the local `Uuid` primary key is generated once on first pull and never
-/// regenerated.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub enum TaskSource {
     #[default]

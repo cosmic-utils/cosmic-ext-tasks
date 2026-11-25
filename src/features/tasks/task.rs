@@ -26,17 +26,12 @@ pub struct Task {
     pub creation_date: Timestamp,
     #[serde(default)]
     pub sort_order: u32,
-    /// Local (default) or mirrored from a remote Google/Microsoft account.
     #[serde(default)]
     pub source: TaskSource,
-    /// Remote provider's last-modified timestamp, used for last-write-wins
-    /// conflict resolution during sync.
     #[serde(default)]
     pub remote_updated_at: Option<Timestamp>,
     #[serde(default)]
     pub last_synced_at: Option<Timestamp>,
-    /// Set on any local edit to a remote-sourced task; read and cleared by
-    /// the sync engine to decide whether to push. Never persisted.
     #[serde(skip)]
     pub dirty: bool,
 }

@@ -28,7 +28,6 @@ impl AppModel {
             .filter(|e| self.nav.data::<List>(*e).is_some())
             .collect();
 
-        // Group by account (`None` = local lists), local group always first.
         let mut groups: BTreeMap<Option<Uuid>, Vec<Entity>> = BTreeMap::new();
         for entity in list_entities {
             let account_id = self
@@ -54,7 +53,6 @@ impl AppModel {
             (Some(_), Some(_)) => a.1.cmp(&b.1),
         });
 
-        // Drop headers for accounts that no longer have a group; the rest are updated in place.
         let current_account_ids: std::collections::HashSet<Uuid> = ordered
             .iter()
             .filter_map(|(account_id, _, _)| *account_id)
@@ -113,9 +111,6 @@ impl AppModel {
             }
         }
 
-        // Dividers: above the first list-area entity (separating it from
-        // favorites/trash), and above every account header (separating each
-        // group from the one before it).
         let entities: Vec<Entity> = self.nav.iter().collect();
         for (i, entity) in entities.iter().enumerate() {
             let is_header = self.nav.data::<AccountHeaderMarker>(*entity).is_some();
