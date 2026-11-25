@@ -15,12 +15,6 @@ use super::microsoft::MicrosoftTodoProvider;
 use super::model::RemoteTaskDraft;
 use super::provider::{ProviderError, RemoteTaskProvider};
 
-#[derive(Clone, Debug)]
-pub enum SyncStatus {
-    Syncing,
-    Idle { at: Timestamp, had_errors: bool },
-}
-
 #[derive(Clone, Debug, Default)]
 pub struct SyncReport {
     pub accounts_synced: usize,
@@ -87,35 +81,70 @@ pub async fn run_sync(store: Store, disabled: &BTreeSet<Uuid>) -> SyncReport {
         .into_iter()
         .filter(|account| account.enabled && !disabled.contains(&account.id))
     {
-        let Some(provider) = provider_for(account.provider.as_str()) else {
-            continue;
-        };
+        merge_report(&mut report, sync_one(&store, &account).await);
+    }
 
-        let access_token = match token(account.id, false).await {
-            Ok(token) => token,
-            Err(err) => {
-                report.errors.push(format!(
-                    "{}: failed to get access token: {err}",
-                    account.email_or_identity()
-                ));
-                continue;
-            }
-        };
+    report
+}
 
-        match sync_account(&store, provider.as_ref(), &account, &access_token).await {
-            Ok(account_report) => {
-                report.lists_pulled += account_report.lists_pulled;
-                report.tasks_pulled += account_report.tasks_pulled;
-                report.tasks_pushed += account_report.tasks_pushed;
-                report.errors.extend(account_report.errors);
-                report.accounts_synced += 1;
-            }
-            Err(err) => {
-                report
-                    .errors
-                    .push(format!("{}: {err}", account.email_or_identity()));
-            }
+/// Runs a two-way sync pass for one account, used by the per-account button in
+/// the Accounts pane. Locally paused accounts are left untouched.
+pub async fn run_sync_one(store: Store, id: Uuid, disabled: &BTreeSet<Uuid>) -> SyncReport {
+    let mut report = SyncReport::default();
+
+    let accounts = match list_accounts().await {
+        Ok(accounts) => accounts,
+        Err(err) => {
+            report
+                .errors
+                .push(format!("Failed to open the account store: {err}"));
+            return report;
         }
+    };
+
+    let Some(account) = accounts.into_iter().find(|account| account.id == id) else {
+        report.errors.push(format!("Account {id} was not found"));
+        return report;
+    };
+    if !account.enabled || disabled.contains(&id) {
+        return report;
+    }
+
+    merge_report(&mut report, sync_one(&store, &account).await);
+    report
+}
+
+fn merge_report(report: &mut SyncReport, next: SyncReport) {
+    report.lists_pulled += next.lists_pulled;
+    report.tasks_pulled += next.tasks_pulled;
+    report.tasks_pushed += next.tasks_pushed;
+    report.accounts_synced += next.accounts_synced;
+    report.errors.extend(next.errors);
+}
+
+async fn sync_one(store: &Store, account: &Account) -> SyncReport {
+    let mut report = SyncReport::default();
+
+    let Some(provider) = provider_for(account.provider.as_str()) else {
+        return report;
+    };
+
+    let access_token = match token(account.id, false).await {
+        Ok(token) => token,
+        Err(err) => {
+            report.errors.push(format!(
+                "{}: failed to get access token: {err}",
+                account.email_or_identity()
+            ));
+            return report;
+        }
+    };
+
+    match sync_account(store, provider.as_ref(), account, &access_token).await {
+        Ok(account_report) => merge_report(&mut report, account_report),
+        Err(err) => report
+            .errors
+            .push(format!("{}: {err}", account.email_or_identity())),
     }
 
     report

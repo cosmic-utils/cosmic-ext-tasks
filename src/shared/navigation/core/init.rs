@@ -31,7 +31,6 @@ impl AppModel {
             about,
             account_header_entities: std::collections::HashMap::new(),
             accounts_checked: false,
-            accounts_error: None,
             accounts_loaded_once: false,
             config: flags.config.clone(),
             content: Content::new(flags.store.clone(), flags.config),
@@ -47,7 +46,7 @@ impl AppModel {
             modifiers: Modifiers::empty(),
             nav: nav_model,
             account_auth: None,
-            account_action_error: None,
+            account_adding: false,
             remote_accounts: Vec::new(),
             search: Search::new(flags.store.clone()),
             sent_reminders: std::collections::HashSet::new(),
@@ -55,7 +54,7 @@ impl AppModel {
             toasts: widget::Toasts::new(Message::CloseToast),
             trash: Trash::new(flags.store.clone()),
             trash_entity: widget::segmented_button::Entity::default(),
-            sync_status: None,
+            account_syncing: std::collections::HashSet::new(),
         };
 
         let mut tasks = vec![

@@ -46,9 +46,8 @@ pub struct AppModel {
 
     /// Set once the embedded account store has been opened at least once.
     /// Sign-in stays unavailable until then; a locked or missing secure
-    /// store is reported through `accounts_error` instead of falling back.
+    /// store is reported through a toast instead of falling back.
     pub(crate) accounts_checked: bool,
-    pub(crate) accounts_error: Option<String>,
 
     /// Set once the account list has been loaded at least once, so the
     /// "an account just became active" auto-enable logic doesn't treat
@@ -59,7 +58,8 @@ pub struct AppModel {
 
     /// An OAuth request that has opened the browser and is waiting to finish.
     pub(crate) account_auth: Option<AuthRequest>,
-    pub(crate) account_action_error: Option<String>,
+    pub(crate) account_adding: bool,
 
-    pub(crate) sync_status: Option<crate::shared::providers::sync::SyncStatus>,
+    /// Accounts with a user-requested sync running right now.
+    pub(crate) account_syncing: HashSet<Uuid>,
 }
