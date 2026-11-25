@@ -1,9 +1,6 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use accounts::{
-    models::{Account, DbusProviderInfo},
-    AccountsClient,
-};
+use accounts::{Account, AuthRequest};
 use cosmic::{
     app::Core,
     cosmic_config,
@@ -47,11 +44,11 @@ pub struct AppModel {
     /// `reposition_special_items()` calls instead of being recreated (flicker).
     pub(crate) account_header_entities: HashMap<Uuid, nav_bar::Id>,
 
-    /// `None` until we know whether accounts-daemon is reachable; still `None`
-    /// afterwards if it isn't installed/running, in which case account sync
-    /// features are hidden and the app behaves as fully local-only.
-    pub(crate) accounts: Option<AccountsClient>,
-    pub(crate) accounts_daemon_checked: bool,
+    /// Set once the embedded account store has been opened at least once.
+    /// Sign-in stays unavailable until then; a locked or missing secure
+    /// store is reported through `accounts_error` instead of falling back.
+    pub(crate) accounts_checked: bool,
+    pub(crate) accounts_error: Option<String>,
 
     /// Set once the account list has been loaded at least once, so the
     /// "an account just became active" auto-enable logic doesn't treat
@@ -59,18 +56,10 @@ pub struct AppModel {
     /// and wipe the user's saved local on/off preferences.
     pub(crate) accounts_loaded_once: bool,
     pub(crate) remote_accounts: Vec<Account>,
+
+    /// An OAuth request that has opened the browser and is waiting to finish.
+    pub(crate) account_auth: Option<AuthRequest>,
+    pub(crate) account_action_error: Option<String>,
+
     pub(crate) sync_status: Option<crate::shared::providers::sync::SyncStatus>,
-
-    /// Provider capability list from `AccountsClient::list_providers()`,
-    /// carrying each provider's declared icon (URL / path / theme name).
-    pub(crate) providers: Vec<DbusProviderInfo>,
-
-    /// Provider id -> decoded icon `Handle`, for providers whose manifest
-    /// icon is a URL. Caches the `Handle` rather than the bytes so its `Id`
-    /// stays stable and repeated `icon_set` calls don't re-decode (flicker).
-    pub(crate) provider_icons: HashMap<String, cosmic::widget::icon::Handle>,
-
-    /// Provider ids whose icon fetch has already been attempted this
-    /// session (success or failure), so we don't refetch on every reload.
-    pub(crate) provider_icon_fetch_attempted: HashSet<String>,
 }

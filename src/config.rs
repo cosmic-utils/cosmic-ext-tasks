@@ -14,11 +14,10 @@ pub const CONFIG_VERSION: u64 = 1;
 pub struct AppConfig {
     pub app_theme: AppTheme,
 
-    /// Accounts the user has turned off *within Tasks only* (e.g. via the
-    /// Accounts page toggle). This is local app state, separate from
-    /// whether the account's Todo capability is enabled in the system
-    /// Accounts app — that's read-only from here. An account absent from
-    /// this set is synced by default as long as its Todo capability is on.
+    /// Accounts the user has paused *within Tasks only* (e.g. via the
+    /// Accounts page toggle). This is local app state, separate from the
+    /// account's enabled state in Tasks' embedded account store. An account
+    /// absent from this set is synced by default while it remains enabled.
     #[serde(default)]
     pub disabled_accounts: BTreeSet<Uuid>,
 

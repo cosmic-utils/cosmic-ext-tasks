@@ -1,55 +1,37 @@
-use cosmic::iced::{
-    futures::{channel::mpsc::Sender, SinkExt, StreamExt},
-    stream, Subscription,
-};
+// SPDX-License-Identifier: GPL-3.0-only
+
+use accounts::{Event, Service};
+use cosmic::iced::{futures::stream, Subscription};
+use tokio::sync::broadcast::error::RecvError;
 
 use crate::app::Message;
 
-use super::AccountsAction;
+use super::{manager, AccountsAction};
 
-/// Listens for account-added/removed/changed signals from accounts-daemon
-/// (e.g. the user disabling Todo, or disconnecting an account, from the
-/// Accounts app) and asks Tasks to reload its account list whenever one
-/// fires, so a toggle flipped elsewhere is reflected here promptly instead
-/// of waiting for the next periodic sync.
+/// Reloads Tasks' account list when its embedded manager adds, removes,
+/// reconnects, or changes a Tasks account. The periodic retry covers startup
+/// before the secure store has been opened.
 pub fn subscription() -> Subscription<Message> {
-    Subscription::run(|| {
-        stream::channel(10, |mut output: Sender<Message>| async move {
-            let client = match accounts::AccountsClient::new().await {
-                Ok(client) => client,
-                Err(err) => {
-                    tracing::debug!("accounts signal subscription: daemon unreachable: {err}");
-                    return;
+    Subscription::run_with((), |()| {
+        stream::unfold((), |()| async move {
+            match manager::manager().await {
+                Ok(accounts) => {
+                    let mut events = accounts.subscribe();
+                    loop {
+                        match events.recv().await {
+                            Ok(Event::AccountsChanged(Service::Tasks))
+                            | Err(RecvError::Lagged(_)) => break,
+                            Ok(_) => continue,
+                            Err(RecvError::Closed) => {
+                                tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+                                break;
+                            }
+                        }
+                    }
                 }
-            };
-
-            let (mut added, mut removed) = match (
-                client.receive_account_added().await,
-                client.receive_account_removed().await,
-            ) {
-                (Ok(added), Ok(removed)) => (added, removed),
-                _ => {
-                    tracing::error!("accounts signal subscription: failed to subscribe to signals");
-                    return;
-                }
-            };
-
-            loop {
-                let more = tokio::select! {
-                    item = added.next() => item.is_some(),
-                    item = removed.next() => item.is_some(),
-                };
-                if !more {
-                    break;
-                }
-                if output
-                    .send(Message::Accounts(AccountsAction::AccountsChanged))
-                    .await
-                    .is_err()
-                {
-                    break;
-                }
+                Err(_) => tokio::time::sleep(std::time::Duration::from_secs(30)).await,
             }
+            Some((Message::Accounts(AccountsAction::Changed), ()))
         })
     })
 }
