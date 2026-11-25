@@ -85,6 +85,25 @@ flatpak:
         install -Dm0644 "{{icons-src}}/$size/apps/{{APPID}}.svg" "{{flatpak-icons-dst}}/$size/apps/{{APPID}}.svg"; \
     done
 
+# Regenerates the Flatpak dependency manifest from Cargo.lock.
+flatpak-cargo-sources:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .flatpak-builder
+    scratch=$(mktemp -d .flatpak-builder/cargo-sources.XXXXXX)
+    trap 'rm -rf "$scratch"' EXIT
+    curl -fsSL https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py -o "$scratch/generator.py"
+    python3 -m venv "$scratch/.venv"
+    "$scratch/.venv/bin/python" -m pip install 'aiohttp>=3.9.5,<4' 'tomlkit>=0.13.3,<1'
+    "$scratch/.venv/bin/python" "$scratch/generator.py" Cargo.lock -o "$scratch/cargo-sources.json"
+    mv "$scratch/cargo-sources.json" flatpak/cargo-sources.json
+
+# Builds an installable Flatpak bundle under dist.
+flatpak-bundle *args:
+    mkdir -p dist
+    flatpak-builder --user --force-clean --repo=.flatpak-builder/repo {{args}} .flatpak-builder/build-dir flatpak/{{APPID}}.json
+    flatpak build-bundle .flatpak-builder/repo dist/{{APPID}}.flatpak {{APPID}}
+
 # Uninstalls installed files
 uninstall:
     rm {{bin-dst}}

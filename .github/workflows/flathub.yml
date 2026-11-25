@@ -35,12 +35,13 @@ jobs:
       - name: Generate cargo-sources.json
         working-directory: source
         run: |
+          mkdir -p flatpak
           curl -Lo flatpak-cargo-generator.py \
             https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
-          python3 flatpak-cargo-generator.py Cargo.lock -o cargo-sources.json
+          python3 flatpak-cargo-generator.py Cargo.lock -o flatpak/cargo-sources.json
 
       - name: Copy cargo-sources.json into Flathub repo
-        run: cp source/cargo-sources.json flathub/cargo-sources.json
+        run: cp source/flatpak/cargo-sources.json flathub/cargo-sources.json
 
       - name: Pin manifest to release commit
         working-directory: flathub

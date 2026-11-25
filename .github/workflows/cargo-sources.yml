@@ -1,0 +1,43 @@
+name: Flatpak
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-26.08
+      options: --privileged
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install flatpak-cargo-generator deps
+        run: pip3 install aiohttp tomlkit
+
+      - name: Generate cargo-sources.json
+        run: |
+          curl -Lo flatpak-cargo-generator.py \
+            https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
+          python3 flatpak-cargo-generator.py Cargo.lock -o flatpak/cargo-sources.json
+
+      - name: Upload cargo-sources.json artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: cargo-sources-${{ github.run_id }}
+          path: flatpak/cargo-sources.json
+          retention-days: 30
+
+      - name: Commit updated cargo sources
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          branch: main
+          file_pattern: flatpak/cargo-sources.json
+          commit_options: --only -- flatpak/cargo-sources.json
+          commit_message: 'chore(flatpak): update cargo sources'
+          commit_author: Eduardo Flores <edfloreshz@gmail.com>
