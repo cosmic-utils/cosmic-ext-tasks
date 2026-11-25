@@ -27,6 +27,21 @@ cd tasks
 cargo build
 ```
 
+## Accounts
+
+Open **Settings → Accounts** to sign in with Google or Microsoft. The embedded `accounts`
+library owns the account records and encrypted credentials inside Tasks; no separate Accounts
+installation, daemon, or consent app is required. Use **Reconnect** to refresh approval,
+**Remove** to delete an account and its credentials, and the toggle to pause or resume sync.
+
+OAuth client registrations are supplied by the packager, not committed to this repository. Set
+`ACCOUNTS_GOOGLE_TASKS_CLIENT_ID` and `ACCOUNTS_MICROSOFT_TASKS_CLIENT_ID` before launching Tasks.
+For registrations that require a secret, also set the matching `_CLIENT_SECRET`; desktop clients
+may use PKCE without a secret.
+
+Sign-in fails entirely if secure storage is unavailable or locked; credentials are never stored
+in plaintext or kept only in memory.
+
 ## Dependencies
 - [libcosmic](https://github.com/pop-os/libcosmic?tab=readme-ov-file#building)
 

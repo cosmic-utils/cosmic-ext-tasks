@@ -100,13 +100,7 @@ impl AppModel {
                         entity
                     }
                 };
-                // Refreshed every call so a provider icon is picked up once its fetch completes.
-                let icon = crate::features::accounts::provider_icon(
-                    &self.providers,
-                    &self.provider_icons,
-                    provider,
-                )
-                .size(16);
+                let icon = crate::features::accounts::provider_icon(provider).size(16);
                 self.nav.icon_set(header, icon);
 
                 self.nav.position_set(header, pos);

@@ -1,86 +1,99 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
+use accounts::{provider::providers_for, ui::provider_label, AuthRequest, Service};
+use cosmic::iced::Alignment;
 use cosmic::{widget, Element};
 
 use crate::{
-    app::{AppModel, ContextPage, Message},
+    app::{AppModel, Message},
     fl,
 };
 
 use super::AccountsAction;
 
-/// "Manage accounts" entry point, added to the Settings page.
-pub fn _settings_entry(app: &AppModel) -> Element<'_, Message> {
-    let subtitle = if !app.accounts_daemon_checked {
-        String::new()
-    } else if app.accounts.is_none() {
-        fl!("accounts-daemon-unavailable")
-    } else if todo_accounts(app).is_empty() {
-        fl!("no-accounts-connected")
-    } else {
-        fl!("manage-accounts")
-    };
+impl AppModel {
+    pub(crate) fn accounts_checked(&self) -> bool {
+        self.accounts_checked
+    }
 
-    widget::settings::section()
-        .title(fl!("accounts"))
-        .add(
-            widget::settings::item::builder(fl!("accounts"))
-                .description(subtitle)
-                .control(
-                    widget::button::standard(fl!("accounts"))
-                        .on_press(Message::ToggleContextPage(ContextPage::Accounts)),
-                ),
-        )
-        .into()
+    pub(crate) fn accounts_error(&self) -> Option<&str> {
+        self.accounts_error.as_deref()
+    }
+
+    pub(crate) fn account_action_error(&self) -> Option<&str> {
+        self.account_action_error.as_deref()
+    }
+
+    pub(crate) fn account_auth(&self) -> Option<&AuthRequest> {
+        self.account_auth.as_ref()
+    }
+
+    fn account_locally_enabled(&self, id: uuid::Uuid) -> bool {
+        !self.config.disabled_accounts.contains(&id)
+    }
 }
 
-/// Full-page account manager, rendered in the `ContextPage::Accounts` drawer.
-/// Tasks does not create/remove accounts here — that's the system Accounts
-/// app's job; this page only lets the user flip a local on/off switch per
-/// account and jump to the Accounts app to manage connections.
+/// Accounts section rendered inside Tasks' settings context drawer.
+///
+/// Accounts are created, reconnected, and removed here. Only accounts whose
+/// service is Tasks are listed, even if the library was built with other
+/// service features.
 pub fn page(app: &AppModel) -> Element<'_, Message> {
     let mut section = widget::settings::section().title(fl!("accounts"));
 
-    section = section.add(widget::settings::item::item(
-        fl!("manage-accounts"),
-        widget::button::standard(fl!("open"))
-            .on_press(Message::Accounts(AccountsAction::OpenAccountsApp)),
-    ));
-
-    if !app.accounts_daemon_checked {
-        return widget::scrollable(section).into();
+    if !app.accounts_checked() {
+        section = section.add(widget::text::body(fl!("accounts-checking")));
+    } else if let Some(error) = app.accounts_error() {
+        section = section.add(widget::text::body(error));
+    } else if app.remote_accounts.is_empty() {
+        section = section.add(widget::text::body(fl!("no-accounts-connected")));
     }
 
-    if app.accounts.is_none() {
-        section = section.add(widget::settings::item::item(
-            fl!("accounts-daemon-unavailable"),
-            widget::text::body(""),
-        ));
-        return widget::scrollable(section).into();
+    if let Some(error) = app.account_action_error() {
+        section = section.add(widget::text::body(fl!(
+            "account-action-error",
+            error = error
+        )));
     }
 
-    let accounts = todo_accounts(app);
-
-    if accounts.is_empty() {
-        section = section.add(widget::settings::item::item(
-            fl!("no-accounts-connected"),
-            widget::text::body(""),
-        ));
-        return widget::scrollable(section).into();
+    if let Some(request) = app.account_auth() {
+        let state = request.state.clone();
+        section = section.add(
+            widget::settings::item::builder(fl!(
+                "accounts-waiting",
+                provider = provider_label(request.provider)
+            ))
+            .description(fl!("accounts-waiting-description"))
+            .control(
+                widget::button::standard(fl!("accounts-cancel"))
+                    .on_press(Message::Accounts(AccountsAction::CancelAuth(state))),
+            ),
+        );
     }
 
-    for account in accounts {
+    for account in &app.remote_accounts {
         let id = account.id;
-        let locally_enabled = !app.config.disabled_accounts.contains(&id);
-        let label = if let Some(email) = &account.email {
-            format!("{} ({})", account.display_name, email)
-        } else {
-            account.display_name.clone()
-        };
+        let locally_enabled = app.account_locally_enabled(id);
+        let controls = widget::row::with_capacity(3)
+            .spacing(cosmic::theme::spacing().space_xs)
+            .align_y(Alignment::Center)
+            .push(
+                widget::button::standard(fl!("accounts-reconnect"))
+                    .on_press(Message::Accounts(AccountsAction::Reconnect(id))),
+            )
+            .push(
+                widget::button::destructive(fl!("accounts-remove"))
+                    .on_press(Message::Accounts(AccountsAction::Remove(id))),
+            )
+            .push(widget::toggler(locally_enabled).on_toggle(move |enabled| {
+                Message::Accounts(AccountsAction::SetLocallyEnabled(id, enabled))
+            }));
 
-        section = section.add(widget::settings::item::builder(label).control(
-            widget::toggler(locally_enabled).on_toggle(move |val| {
-                Message::Accounts(AccountsAction::SetLocallyEnabled(id, val))
-            }),
-        ));
+        section = section.add(
+            widget::settings::item::builder(account.email_or_identity().to_owned())
+                .description(provider_label(account.provider))
+                .control(controls),
+        );
     }
 
     let (label, syncing) = match &app.sync_status {
@@ -103,24 +116,31 @@ pub fn page(app: &AppModel) -> Element<'_, Message> {
     };
     section = section.add(widget::settings::item::item(
         label,
-        widget::button::standard(fl!("sync"))
-            .on_press_maybe((!syncing).then_some(Message::Accounts(AccountsAction::SyncNow))),
+        widget::button::standard(fl!("sync")).on_press_maybe(
+            (!syncing && !app.remote_accounts.is_empty())
+                .then_some(Message::Accounts(AccountsAction::SyncNow)),
+        ),
     ));
 
-    widget::scrollable(section).into()
-}
+    let available = providers_for(Service::Tasks);
+    let has_providers = !available.is_empty();
+    let mut providers = widget::row::with_capacity(2).spacing(cosmic::theme::spacing().space_xs);
+    for provider in available {
+        let label = fl!("accounts-sign-in", provider = provider_label(provider));
+        providers = providers.push(
+            widget::button::standard(label)
+                .on_press(Message::Accounts(AccountsAction::AddProvider(provider))),
+        );
+    }
+    if !has_providers {
+        section = section.add(widget::text::body(fl!("accounts-no-providers")));
+    } else {
+        section = section.add(
+            widget::settings::item::builder(fl!("accounts-add"))
+                .description(fl!("manage-accounts-description"))
+                .control(providers),
+        );
+    }
 
-/// Accounts with the Todo capability enabled in the system Accounts app.
-/// Tasks only ever shows/syncs accounts that pass this filter; an account
-/// with Todo turned off there is invisible here, not just unsynced.
-fn todo_accounts(app: &AppModel) -> Vec<&accounts::models::Account> {
-    app.remote_accounts
-        .iter()
-        .filter(|a| {
-            a.services
-                .get(&accounts::models::Service::Tasks)
-                .copied()
-                .unwrap_or(false)
-        })
-        .collect()
+    section.into()
 }

@@ -252,16 +252,13 @@ impl Application for AppModel {
             self.store.base_dir().to_path_buf(),
         ));
 
-        if self.accounts.is_some() {
-            subscriptions.push(accounts::subscription::subscription());
+        subscriptions.push(accounts::subscription::subscription());
 
-            if !self.remote_accounts.is_empty() {
-                subscriptions.push(
-                    cosmic::iced::time::every(std::time::Duration::from_secs(300)).map(|_| {
-                        Message::Accounts(crate::features::accounts::AccountsAction::SyncNow)
-                    }),
-                );
-            }
+        if !self.remote_accounts.is_empty() {
+            subscriptions.push(
+                cosmic::iced::time::every(std::time::Duration::from_secs(300))
+                    .map(|_| Message::Accounts(crate::features::accounts::AccountsAction::SyncNow)),
+            );
         }
 
         Subscription::batch(subscriptions)

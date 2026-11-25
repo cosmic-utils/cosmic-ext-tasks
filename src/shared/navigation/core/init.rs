@@ -30,8 +30,8 @@ impl AppModel {
         let mut app = AppModel {
             about,
             account_header_entities: std::collections::HashMap::new(),
-            accounts: None,
-            accounts_daemon_checked: false,
+            accounts_checked: false,
+            accounts_error: None,
             accounts_loaded_once: false,
             config: flags.config.clone(),
             content: Content::new(flags.store.clone(), flags.config),
@@ -46,9 +46,8 @@ impl AppModel {
             key_binds: key_binds(),
             modifiers: Modifiers::empty(),
             nav: nav_model,
-            provider_icons: std::collections::HashMap::new(),
-            provider_icon_fetch_attempted: std::collections::HashSet::new(),
-            providers: Vec::new(),
+            account_auth: None,
+            account_action_error: None,
             remote_accounts: Vec::new(),
             search: Search::new(flags.store.clone()),
             sent_reminders: std::collections::HashSet::new(),
@@ -65,15 +64,7 @@ impl AppModel {
             cosmic::task::message(Message::Search(
                 crate::features::search::search::Message::Load,
             )),
-            cosmic::task::future(async move {
-                match accounts::AccountsClient::new().await {
-                    Ok(client) => Message::Accounts(AccountsAction::DaemonConnected(client)),
-                    Err(err) => {
-                        tracing::info!("accounts-daemon unavailable, running local-only: {err}");
-                        Message::Accounts(AccountsAction::DaemonUnavailable)
-                    }
-                }
-            }),
+            cosmic::task::message(Message::Accounts(AccountsAction::Discover)),
         ];
 
         if let Some(id) = app.core.main_window_id() {
