@@ -1,7 +1,8 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet, btree_map::Entry};
 
 use accounts::Account;
 use jiff::Timestamp;
+use tokio::sync::Mutex;
 use uuid::Uuid;
 
 use crate::features::accounts::{list as list_accounts, token};
@@ -14,6 +15,9 @@ use super::google::GoogleTasksProvider;
 use super::microsoft::MicrosoftTodoProvider;
 use super::model::RemoteTaskDraft;
 use super::provider::{ProviderError, RemoteTaskProvider};
+
+// Both scheduled and manual syncs read and write the same list registry.
+static SYNC_LOCK: Mutex<()> = Mutex::const_new(());
 
 #[derive(Clone, Debug, Default)]
 pub struct SyncReport {
@@ -115,6 +119,7 @@ fn merge_report(report: &mut SyncReport, next: SyncReport) {
 }
 
 async fn sync_one(store: &Store, account: &Account) -> SyncReport {
+    let _sync_guard = SYNC_LOCK.lock().await;
     let mut report = SyncReport::default();
 
     let Some(provider) = provider_for(account.provider.as_str()) else {
@@ -205,15 +210,49 @@ async fn sync_account(
     let mut report = SyncReport::default();
 
     let remote_lists = provider.list_lists(token).await?;
-    let local_lists = store.lists().load_all().unwrap_or_default();
+    if remote_lists.iter().any(|list| list.remote_id.is_empty()) {
+        report.errors.push("Provider returned a list without an ID".into());
+        return Ok(report);
+    }
+    let local_lists = match store.lists().load_all() {
+        Ok(lists) => lists,
+        Err(err) => {
+            report.errors.push(format!("Failed to load lists: {err}"));
+            return Ok(report);
+        }
+    };
 
+    let mut local_by_remote_id = BTreeMap::new();
+    for list in &local_lists {
+        if !matches_account(&list.source, account.id) {
+            continue;
+        }
+        let Some(remote_id) = list.source.remote_id() else {
+            continue;
+        };
+        match local_by_remote_id.entry(remote_id) {
+            Entry::Vacant(entry) => {
+                entry.insert(list);
+            }
+            Entry::Occupied(entry) if entry.get().id != list.id => {
+                // Keep the first list active and preserve the duplicate's tasks in Trash.
+                if let Err(err) = store.trash().trash_list(list.id) {
+                    report
+                        .errors
+                        .push(format!("Failed to trash duplicate list: {err}"));
+                }
+            }
+            Entry::Occupied(_) => {}
+        }
+    }
+
+    let mut seen_remote_ids = BTreeSet::new();
     for remote_list in &remote_lists {
-        let existing = local_lists.iter().find(|l| {
-            matches_account(&l.source, account.id)
-                && l.source.remote_id() == Some(remote_list.remote_id.as_str())
-        });
+        if !seen_remote_ids.insert(remote_list.remote_id.as_str()) {
+            continue;
+        }
 
-        let list_id = match existing {
+        let list_id = match local_by_remote_id.get(remote_list.remote_id.as_str()) {
             Some(list) => {
                 if list.name != remote_list.title {
                     if let Err(err) = store
@@ -260,14 +299,8 @@ async fn sync_account(
         }
     }
 
-    for local_list in &local_lists {
-        if !matches_account(&local_list.source, account.id) {
-            continue;
-        }
-        let still_exists = remote_lists
-            .iter()
-            .any(|r| Some(r.remote_id.as_str()) == local_list.source.remote_id());
-        if !still_exists {
+    for (remote_id, local_list) in local_by_remote_id {
+        if !seen_remote_ids.contains(remote_id) {
             if let Err(err) = store.trash().trash_list(local_list.id) {
                 tracing::error!("Failed to trash remotely-deleted list: {err}");
             }

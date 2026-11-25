@@ -33,6 +33,8 @@ pub struct AppModel {
     pub(crate) key_binds: HashMap<KeyBind, MenuAction>,
     pub(crate) modifiers: Modifiers,
     pub(crate) nav: nav_bar::Model,
+    pub(crate) sidebar: nav_bar::Model,
+    pub(crate) collapsed_accounts: HashSet<Uuid>,
     pub(crate) search: Search,
     pub(crate) sent_reminders: HashSet<(Uuid, i64)>,
     pub(crate) store: Store,

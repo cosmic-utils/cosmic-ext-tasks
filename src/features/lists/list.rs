@@ -62,7 +62,7 @@ impl TrashedList {
     pub fn deleted_at_local(&self) -> String {
         let tz = jiff::tz::TimeZone::system();
         self.deleted_at
-            .to_zoned(tz)
+            .to_zoned_datetime(tz)
             .strftime("%m-%d-%Y %H:%M")
             .to_string()
     }

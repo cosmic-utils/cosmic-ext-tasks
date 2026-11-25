@@ -84,7 +84,9 @@ impl Task {
 
     pub fn format_timestamp(ts: &jiff::Timestamp) -> String {
         let tz = jiff::tz::TimeZone::system();
-        ts.to_zoned(tz).strftime("%m-%d-%Y %H:%M").to_string()
+        ts.to_zoned_datetime(tz)
+            .strftime("%m-%d-%Y %H:%M")
+            .to_string()
     }
 
     pub fn is_completed(&self) -> bool {

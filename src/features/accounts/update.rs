@@ -39,6 +39,7 @@ impl AppModel {
                 let is_first_load = !self.accounts_loaded_once;
                 self.accounts_loaded_once = true;
                 self.remote_accounts = accounts.clone();
+                self.reposition_special_items();
 
                 let active = active_ids(&accounts);
 

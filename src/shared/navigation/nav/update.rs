@@ -76,7 +76,7 @@ impl AppModel {
                 let Some(entity) = entity else {
                     return app::Task::none();
                 };
-                return self.on_nav_select(entity);
+                return self.select_nav_entity(entity);
             }
             TasksAction::DeleteList(entity) => {
                 let entity = if let Some(entity) = entity {
@@ -124,7 +124,7 @@ impl AppModel {
                 }
             },
             TasksAction::NavSelect(entity) => {
-                return self.on_nav_select(entity);
+                return self.select_nav_entity(entity);
             }
             TasksAction::PopulateLists(lists) => {
                 for list in lists {
@@ -139,7 +139,13 @@ impl AppModel {
                             .iter()
                             .find(|e| self.nav.data::<List>(*e).is_some_and(|l| l.id == id))
                     })
-                    .or_else(|| self.nav.iter().next());
+                    .or_else(|| {
+                        self.nav.iter().find(|entity| {
+                            self.nav
+                                .data::<crate::features::accounts::AccountHeaderMarker>(*entity)
+                                .is_none()
+                        })
+                    });
                 let Some(entity) = entity else {
                     return app::Task::none();
                 };

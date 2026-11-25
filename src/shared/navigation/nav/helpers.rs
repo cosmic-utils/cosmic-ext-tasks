@@ -1,6 +1,12 @@
-use std::{cmp::Ordering, collections::BTreeMap};
+use std::{
+    cmp::Ordering,
+    collections::{BTreeMap, HashMap},
+};
 
-use cosmic::widget::segmented_button::Entity;
+use cosmic::widget::{
+    self,
+    segmented_button::Entity,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -29,6 +35,9 @@ impl AppModel {
             .collect();
 
         let mut groups: BTreeMap<Option<Uuid>, Vec<Entity>> = BTreeMap::new();
+        for account in &self.remote_accounts {
+            groups.entry(Some(account.id)).or_default();
+        }
         for entity in list_entities {
             let account_id = self
                 .nav
@@ -74,13 +83,6 @@ impl AppModel {
             self.sort_list_entities(&mut entities);
 
             if let Some(account_id) = account_id {
-                let provider = self
-                    .remote_accounts
-                    .iter()
-                    .find(|a| a.id == account_id)
-                    .map(|a| a.provider.as_str())
-                    .unwrap_or_default();
-
                 let header = match self.account_header_entities.get(&account_id) {
                     Some(&entity) => {
                         self.nav.text_set(entity, label.clone());
@@ -91,16 +93,12 @@ impl AppModel {
                             .nav
                             .insert()
                             .text(label.clone())
-                            .data(AccountHeaderMarker)
+                            .data(AccountHeaderMarker(account_id))
                             .id();
-                        self.nav.enable(entity, false);
                         self.account_header_entities.insert(account_id, entity);
                         entity
                     }
                 };
-                let icon = crate::features::accounts::provider_icon(provider).size(16);
-                self.nav.icon_set(header, icon);
-
                 self.nav.position_set(header, pos);
                 pos += 1;
             }
@@ -116,6 +114,68 @@ impl AppModel {
             let is_header = self.nav.data::<AccountHeaderMarker>(*entity).is_some();
             self.nav
                 .divider_above_set(*entity, is_header || i == first_list_pos as usize);
+        }
+    }
+
+    // Keep list IDs and the active list stable when their sidebar rows are hidden.
+    pub(crate) fn refresh_sidebar(&mut self) {
+        let mut existing: HashMap<Entity, Entity> = self
+            .sidebar
+            .iter()
+            .filter_map(|row| {
+                self.sidebar
+                    .data::<Entity>(row)
+                    .map(|&entity| (entity, row))
+            })
+            .collect();
+        let active = self.nav.active();
+        self.sidebar.deactivate();
+
+        for (position, entity) in self
+            .nav
+            .iter()
+            .filter(|&entity| {
+                !self
+                    .nav
+                    .data::<List>(entity)
+                    .and_then(|list| list.source.account_id())
+                    .is_some_and(|id| self.collapsed_accounts.contains(&id))
+            })
+            .enumerate()
+        {
+            let row = existing
+                .remove(&entity)
+                .unwrap_or_else(|| self.sidebar.insert().data(entity).id());
+            let header = self.nav.data::<AccountHeaderMarker>(entity);
+            let icon = if let Some(header) = header {
+                let name = if self.collapsed_accounts.contains(&header.0) {
+                    "pan-end-symbolic"
+                } else {
+                    "pan-down-symbolic"
+                };
+                Some(widget::icon::from_name(name).size(16).icon())
+            } else {
+                self.nav.icon(entity).cloned()
+            };
+            if let Some(icon) = icon {
+                self.sidebar.icon_set(row, icon);
+            }
+            self.sidebar
+                .text_set(row, self.nav.text(entity).unwrap_or_default().to_owned());
+            let is_account_list = self
+                .nav
+                .data::<List>(entity)
+                .is_some_and(|list| list.source.account_id().is_some());
+            self.sidebar.indent_set(row, u16::from(is_account_list));
+            self.sidebar
+                .divider_above_set(row, self.nav.divider_above(entity).unwrap_or(false));
+            self.sidebar.position_set(row, position as u16);
+            if entity == active {
+                self.sidebar.activate(row);
+            }
+        }
+        for row in existing.into_values() {
+            self.sidebar.remove(row);
         }
     }
 
