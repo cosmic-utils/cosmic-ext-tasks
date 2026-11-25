@@ -14,8 +14,6 @@ pub struct RemoteTask {
     pub notes: String,
     pub remote_id: String,
     pub title: String,
-    /// Provider's last-modified timestamp, used for last-write-wins conflict
-    /// resolution against the local `Task::remote_updated_at`.
     pub updated_at: Option<jiff::Timestamp>,
 }
 

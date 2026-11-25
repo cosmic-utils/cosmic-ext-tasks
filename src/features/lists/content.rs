@@ -425,15 +425,8 @@ impl Content {
                 let current_state = self.editing.get(id).copied().unwrap_or_default();
 
                 let new_state = match (current_state, editing) {
-                    // User clicked the widget – it already self-focused internally.
-                    // Going straight to Editing avoids sending a redundant programmatic
-                    // focus command that would reset LAST_FOCUS_UPDATE and immediately
-                    // unfocus the widget, requiring a second click.
                     (EditState::Idle, true) => Some(EditState::Editing),
-                    // A programmatic focus (e.g. new sub-task) was requested and the
-                    // widget has now confirmed it entered edit mode.
                     (EditState::Entering, true) => Some(EditState::Editing),
-                    // Sub-task lost focus before the user submitted – save and return.
                     (EditState::Entering, false) => {
                         if let Some(task) = self.tasks.get(id) {
                             if let Err(error) = self
@@ -446,10 +439,6 @@ impl Content {
                         }
                         Some(EditState::Idle)
                     }
-                    // User clicked away – save and return to idle.
-                    // A second on_toggle_edit(false) may fire from the widget's own
-                    // focus-loss handler, but (Idle, false) is ignored below, so it
-                    // is harmless.
                     (EditState::Editing, false) => {
                         if let Some(task) = self.tasks.get(id) {
                             if let Err(error) = self
@@ -462,7 +451,6 @@ impl Content {
                         }
                         Some(EditState::Idle)
                     }
-                    // Already in the requested state – nothing to do.
                     (EditState::Idle, false) | (EditState::Editing, true) => None,
                 };
 

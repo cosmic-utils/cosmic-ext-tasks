@@ -295,8 +295,6 @@ pub struct ListStore<'s> {
 
 impl ListStore<'_> {
     /// Removes a list from the registry without touching its task directory.
-    /// Used when moving a list to trash, where the directory is relocated
-    /// rather than deleted.
     pub fn detach(&self, list_id: Uuid) -> Result<List> {
         let mut lists = self.load_all()?;
         let pos = lists
@@ -476,8 +474,7 @@ impl TaskStore<'_> {
     }
 
     /// Saves a task, marking it dirty if it's mirrored from a remote account
-    /// so the sync engine knows to push this edit. Use `save_synced` from
-    /// sync code, which needs to control the `dirty`/timestamp fields itself.
+    /// so the sync engine knows to push this edit.
     pub fn save(&self, task: &Task) -> Result<()> {
         let mut task = task.clone();
         if !task.source.is_local() {
@@ -486,9 +483,7 @@ impl TaskStore<'_> {
         self.write(&task)
     }
 
-    /// Writes a task as-is, without forcing `dirty = true`. Used by the sync
-    /// engine, which manages `dirty`/`remote_updated_at`/`last_synced_at`
-    /// itself when pulling from or confirming a push to a remote provider.
+    /// Writes a task as-is, without forcing `dirty = true`.
     pub fn save_synced(&self, task: &Task) -> Result<()> {
         self.write(task)
     }

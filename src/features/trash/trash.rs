@@ -399,10 +399,6 @@ impl Trash {
         let collapsed = self.collapsed_sections.contains(&list_id);
         let count = individually.len() + from_list.len();
 
-        // Once any single task has been restored out of a trashed list, the
-        // list itself becomes active again (see `restore_task_from_list`),
-        // even though some of its tasks may remain in trash. In that case
-        // whole-list actions no longer apply — only the per-task ones do.
         let list_is_trashed = trashed_list.is_some() && !self.lists.iter().any(|l| l.id == list_id);
 
         let mut extra_buttons: Vec<Element<'a, Message>> = Vec::new();

@@ -30,14 +30,6 @@ impl SyncReport {
     }
 }
 
-/// Moves every list (and its tasks) mirrored from an account that is no
-/// longer active — deleted or disabled in Tasks' embedded account store —
-/// into trash. `active_account_ids` should
-/// contain exactly the accounts currently eligible to sync (account exists,
-/// enabled, Todo capability on); anything remote-sourced outside that set is
-/// considered orphaned. This does not consult Tasks' own local on/off
-/// switch (`AppConfig::disabled_accounts`): turning an account off within
-/// Tasks only pauses sync, it never deletes the local mirror.
 pub fn purge_orphaned_accounts(store: &Store, active_account_ids: &BTreeSet<Uuid>) -> usize {
     let lists = match store.lists().load_all() {
         Ok(lists) => lists,
@@ -215,7 +207,6 @@ async fn sync_account(
     let remote_lists = provider.list_lists(token).await?;
     let local_lists = store.lists().load_all().unwrap_or_default();
 
-    // Pull: new/renamed remote lists, and detect remote deletions.
     for remote_list in &remote_lists {
         let existing = local_lists.iter().find(|l| {
             matches_account(&l.source, account.id)
@@ -269,8 +260,6 @@ async fn sync_account(
         }
     }
 
-    // Detect remote list deletions: local lists tracking this account whose
-    // remote_id is no longer present get moved to trash (non-destructive).
     for local_list in &local_lists {
         if !matches_account(&local_list.source, account.id) {
             continue;
@@ -284,11 +273,6 @@ async fn sync_account(
             }
         }
     }
-
-    // Push: local lists in this account with no remote_id yet (created
-    // locally, e.g. copied) aren't auto-created remotely in this pass to
-    // avoid surprising list creation; only tasks within already-linked lists
-    // are pushed (see `sync_list_tasks`).
 
     Ok(report)
 }
@@ -309,7 +293,6 @@ async fn sync_list_tasks(
 
     let now = Timestamp::now();
 
-    // Pull + push per matched remote task.
     for remote in &remote_tasks {
         let local = local_tasks.iter().find(|t| {
             matches_account(&t.source, account.id)
@@ -377,8 +360,6 @@ async fn sync_list_tasks(
         }
     }
 
-    // Push newly-created local tasks (no remote id yet) that live in a
-    // remote-linked list.
     for local in &local_tasks {
         if !local.source.is_local() {
             continue;
@@ -410,8 +391,6 @@ async fn sync_list_tasks(
         }
     }
 
-    // Remote deletions: local tasks tracking this list/account whose
-    // remote_id is no longer present get moved to trash.
     for local in &local_tasks {
         if !matches_account(&local.source, account.id) || local.source.is_local() {
             continue;

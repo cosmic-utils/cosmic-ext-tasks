@@ -39,27 +39,11 @@ pub struct AppModel {
     pub(crate) toasts: cosmic::widget::Toasts<super::message::Message>,
     pub(crate) trash: Trash,
     pub(crate) trash_entity: nav_bar::Id,
-
-    /// Account id -> its nav bar group-header entity, reused across
-    /// `reposition_special_items()` calls instead of being recreated (flicker).
     pub(crate) account_header_entities: HashMap<Uuid, nav_bar::Id>,
-
-    /// Set once the embedded account store has been opened at least once.
-    /// Sign-in stays unavailable until then; a locked or missing secure
-    /// store is reported through a toast instead of falling back.
     pub(crate) accounts_checked: bool,
-
-    /// Set once the account list has been loaded at least once, so the
-    /// "an account just became active" auto-enable logic doesn't treat
-    /// every already-active account as newly active on the very first load
-    /// and wipe the user's saved local on/off preferences.
     pub(crate) accounts_loaded_once: bool,
     pub(crate) remote_accounts: Vec<Account>,
-
-    /// An OAuth request that has opened the browser and is waiting to finish.
     pub(crate) account_auth: Option<AuthRequest>,
     pub(crate) account_adding: bool,
-
-    /// Accounts with a user-requested sync running right now.
     pub(crate) account_syncing: HashSet<Uuid>,
 }

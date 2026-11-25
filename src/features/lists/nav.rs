@@ -11,9 +11,6 @@ use crate::{
 impl AppModel {
     pub fn create_nav_item(&mut self, list: &List) -> EntityMut<'_, SingleSelect> {
         let default_icon = match list.source {
-            // No official Google/Microsoft brand icon is bundled; a
-            // generic "cloud" glyph distinguishes remote-mirrored lists
-            // from local ones until a themed icon is added.
             TaskSource::Google { .. } | TaskSource::Microsoft { .. } => "weather-clouds-symbolic",
             TaskSource::Local => "view-list-symbolic",
         };
