@@ -22,8 +22,7 @@ pub(crate) async fn list() -> accounts::Result<Vec<Account>> {
 }
 
 pub(crate) async fn begin(provider: Provider) -> accounts::Result<AuthRequest> {
-    let manager = manager().await?;
-    accounts::ui::sign_in(manager, provider, Service::Tasks).await
+    accounts::ui::begin_sign_in(manager().await?, provider, Service::Tasks).await
 }
 
 pub(crate) async fn complete(request: AuthRequest) -> accounts::Result<Account> {
@@ -31,11 +30,7 @@ pub(crate) async fn complete(request: AuthRequest) -> accounts::Result<Account> 
 }
 
 pub(crate) async fn reconnect(id: uuid::Uuid) -> accounts::Result<AuthRequest> {
-    let request = manager().await?.reconnect(id).await?;
-    open::that(&request.url).map_err(|error| {
-        accounts::Error::AuthenticationFailed(format!("could not open browser: {error}"))
-    })?;
-    Ok(request)
+    manager().await?.reconnect(id).await
 }
 
 pub(crate) fn cancel(state: &str) {

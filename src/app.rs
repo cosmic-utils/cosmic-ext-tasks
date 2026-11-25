@@ -49,7 +49,7 @@ impl Application for AppModel {
             return None;
         }
 
-        Some(match self.context_page {
+        let mut drawer = match self.context_page {
             ContextPage::About => app::context_drawer::about(
                 &self.about,
                 |url| Message::Open(url.to_string()),
@@ -71,7 +71,9 @@ impl Application for AppModel {
                 Message::ToggleContextDrawer,
             )
             .title(self.context_page.title()),
-        })
+        };
+        drawer.content = widget::toaster(&self.toasts, drawer.content);
+        Some(drawer)
     }
 
     fn dialog(&self) -> Option<Element<'_, Message>> {
@@ -165,6 +167,9 @@ impl Application for AppModel {
     fn on_escape(&mut self) -> app::Task<Self::Message> {
         if self.dialog_pages.pop_front().is_some() {
             return app::Task::none();
+        }
+        if self.account_adding {
+            return self.update(Message::Accounts(accounts::AccountsAction::CloseAccounts));
         }
 
         self.core.window.show_context = false;
@@ -590,6 +595,18 @@ impl Application for AppModel {
             self.content.view(self.search.query()).map(Message::Content)
         };
 
-        widget::toaster(&self.toasts, content)
+        if self.core.window.show_context {
+            content
+        } else {
+            widget::toaster(&self.toasts, content)
+        }
+    }
+}
+
+impl AppModel {
+    pub(crate) fn toast(&mut self, message: String) -> app::Task<Message> {
+        self.toasts
+            .push(widget::Toast::new(message))
+            .map(cosmic::Action::App)
     }
 }
