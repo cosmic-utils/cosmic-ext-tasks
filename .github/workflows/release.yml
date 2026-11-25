@@ -1,0 +1,47 @@
+name: Release COSMIC Tasks
+
+on:
+  push:
+    tags:
+      - '**'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: ${{ !github.event.deleted }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      url: ${{ steps.publish.outputs.url }}
+    steps:
+      - name: Publish GitHub release
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          if draft=$(gh release view --json isDraft --jq .isDraft -- "$GITHUB_REF_NAME"); then
+            if [[ "$draft" == true ]]; then
+              gh release edit --draft=false -- "$GITHUB_REF_NAME"
+            fi
+          else
+            gh release create --verify-tag --generate-notes -- "$GITHUB_REF_NAME"
+          fi
+          url=$(gh release view --json url --jq .url -- "$GITHUB_REF_NAME")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+  update-flathub:
+    needs: release
+    permissions:
+      contents: read
+    uses: ./.github/workflows/flathub.yml
+    with:
+      tag: ${{ github.ref_name }}
+      release-url: ${{ needs.release.outputs.url }}
+    secrets:
+      FLATHUB_PAT: ${{ secrets.FLATHUB_PAT }}

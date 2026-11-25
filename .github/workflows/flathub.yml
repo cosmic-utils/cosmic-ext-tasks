@@ -3,6 +3,17 @@ name: Update Flathub manifest on release
 on:
   release:
     types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      release-url:
+        required: true
+        type: string
+    secrets:
+      FLATHUB_PAT:
+        required: true
 
 jobs:
   update-flathub:
@@ -14,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: source
-          ref: ${{ github.event.release.tag_name }}
+          ref: refs/tags/${{ inputs.tag || github.event.release.tag_name }}
           fetch-depth: 0
 
       - name: Resolve release commit SHA
@@ -65,7 +76,7 @@ jobs:
         with:
           path: flathub
           token: ${{ secrets.FLATHUB_PAT }}
-          commit-message: "Update to ${{ github.event.release.tag_name }}"
-          title: "Update to ${{ github.event.release.tag_name }}"
-          body: "Automated update from release ${{ github.event.release.html_url }}"
-          branch: "update-${{ github.event.release.tag_name }}"
+          commit-message: "Update to ${{ inputs.tag || github.event.release.tag_name }}"
+          title: "Update to ${{ inputs.tag || github.event.release.tag_name }}"
+          body: "Automated update from release ${{ inputs.release-url || github.event.release.html_url }}"
+          branch: "update-${{ inputs.tag || github.event.release.tag_name }}"

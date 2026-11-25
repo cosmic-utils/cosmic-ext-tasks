@@ -57,6 +57,19 @@
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/edfloreshz/tasks/master/res/icons/hicolor/scalable/apps/dev.edfloreshz.Tasks.svg</icon>
   <launchable type="desktop-id">dev.edfloreshz.Tasks.desktop</launchable>
   <releases>
+    <release version="0.4.0" date="2026-11-25">
+        <description>
+            <p>Connect Google Tasks and Microsoft To Do directly from Tasks.</p>
+            <ul>
+                <li>Sign in, reconnect, pause sync, or remove an account from Settings. Tasks stores account credentials securely and works without a separate accounts service.</li>
+                <li>Sync lists and tasks in both directions, refresh individual accounts on demand, and see errors when sign-in or sync fails.</li>
+                <li>Collapse online lists by account in the sidebar. Each account header shows its email address.</li>
+                <li>Prevent duplicate lists when scheduled and manual syncs overlap.</li>
+                <li>Search all tasks from a single search box with a scope toggle.</li>
+                <li>Use the current COSMIC theme at startup and improve menu consistency and translations.</li>
+            </ul>
+        </description>
+    </release>
     <release version="0.3.1" date="2026-07-16">
         <description>
             <p>Cross-window sync, global search, and a Flatpak theme fix</p>

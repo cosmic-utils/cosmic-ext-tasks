@@ -85,6 +85,33 @@ flatpak:
         install -Dm0644 "{{icons-src}}/$size/apps/{{APPID}}.svg" "{{flatpak-icons-dst}}/$size/apps/{{APPID}}.svg"; \
     done
 
+# Bump the Cargo package version, commit it, and create an annotated tag.
+tag version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    version={{quote(version)}}
+
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+        echo "Expected a Cargo version such as 1.2.3." >&2
+        exit 1
+    fi
+    if git show-ref --verify --quiet "refs/tags/$version"; then
+        echo "Tag $version already exists." >&2
+        exit 1
+    fi
+    if [[ -n "$(git status --porcelain -- Cargo.toml Cargo.lock)" ]]; then
+        echo "Commit or stash pending Cargo.toml and Cargo.lock changes before tagging." >&2
+        exit 1
+    fi
+
+    sed -i "0,/^version = /s/^version = .*/version = \"$version\"/" Cargo.toml
+    if ! cargo update --workspace; then
+        git restore --worktree -- Cargo.toml Cargo.lock
+        exit 1
+    fi
+    git commit --only -m "release: $version" -- Cargo.toml Cargo.lock
+    git tag -a "$version" -m "Release $version"
+
 # Regenerates the Flatpak dependency manifest from Cargo.lock.
 flatpak-cargo-sources:
     #!/usr/bin/env bash
