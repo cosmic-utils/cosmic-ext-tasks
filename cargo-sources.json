@@ -8,8 +8,8 @@
     {
         "type": "git",
         "url": "https://github.com/cosmic-utils/accounts",
-        "commit": "f3d7d6c7344aa69646ff3758ef96f15a8c2817d0",
-        "dest": "flatpak-cargo/git/accounts-f3d7d6c"
+        "commit": "0ff6b2142787cceefd2af750b57ed77b74a2d769",
+        "dest": "flatpak-cargo/git/accounts-0ff6b21"
     },
     {
         "type": "git",
@@ -232,7 +232,7 @@
     {
         "type": "shell",
         "commands": [
-            "cp -r --reflink=auto \"flatpak-cargo/git/accounts-f3d7d6c/crates/accounts\" \"cargo/vendor/accounts\""
+            "cp -r --reflink=auto \"flatpak-cargo/git/accounts-0ff6b21/.\" \"cargo/vendor/accounts\""
         ]
     },
     {
