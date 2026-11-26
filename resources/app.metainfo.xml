@@ -49,6 +49,15 @@
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/cosmic-ext-orbit/cosmic-ext-tasks/main/resources/icons/hicolor/scalable/apps/icon.svg</icon>
   <launchable type="desktop-id">dev.edfloreshz.Tasks.desktop</launchable>
   <releases>
+    <release version="0.4.1" date="2026-11-26">
+        <description>
+            <p>Online accounts now use your system’s secure storage on macOS and Windows.</p>
+            <ul>
+                <li>On macOS, the encryption key for your account credentials is stored in Keychain.</li>
+                <li>On Windows, the encryption key is stored in Credential Manager.</li>
+            </ul>
+        </description>
+    </release>
     <release version="0.4.0" date="2026-11-25">
         <description>
             <p>Connect Google Tasks and Microsoft To Do directly from Tasks.</p>
