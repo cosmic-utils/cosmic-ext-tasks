@@ -74,3 +74,6 @@ features = [
 
 # [patch."https://github.com/pop-os/libcosmic.git"]
 # libcosmic = { path = "../../edfloreshz-ext/libcosmic" }
+#
+# [patch."https://github.com/cosmic-ext-orbit/cosmic-ext-accounts"]
+# accounts = { path = "../cosmic-ext-accounts" }
