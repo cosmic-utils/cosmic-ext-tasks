@@ -57,8 +57,6 @@ task-deleted = "{ $title }" raderad
 deletion-countdown = { $seconds }:er
 
 # Ta bort lista dialogruta
-delete-list = Den valda listan är på väg att raderas
-delete-list-confirm = Är du säker på att du vill ta bort den här listan?
 
 # Ikon dialogruta
 icon = Ställ in ikon...
@@ -137,3 +135,7 @@ sort-name-desc = Namn Ö-A
 sort-date-asc = Datum tillagd (Äldst till Nyast)
 sort-date-desc = Datum tillagd (Nyast till Äldst)
 sort-manual = Manuell
+
+# Desktop and AppStream metadata
+desktop-name = Tasks
+app-keywords = Tasks;Hantering;Todo;Projekt;Planerare;Organisatör;Påminnelse;Checklista;Uppgift;Att-göra;Lista;

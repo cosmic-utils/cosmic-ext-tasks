@@ -136,3 +136,9 @@ sort-name-asc = Név szerint (A–Z)
 sort-name-desc = Név szerint (Z–A)
 sort-date-asc = Hozzáadás dátuma (Legrégebbi elöl)
 sort-date-desc = Hozzáadás dátuma (Legújabb elöl)
+
+# Desktop and AppStream metadata
+desktop-name = Feladatok
+app-keywords = Feladatok;Kezelés;Teendők;Projekt;Tervező;Határidőnapló;Rendszerező;Emlékeztető;Ellenőrzőlista;
+appstream-name = Feladatok
+appstream-summary = Intézd el a teendőidet

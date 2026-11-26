@@ -1,13 +1,13 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::collections::BTreeSet;
 
 use cosmic::{
-    cosmic_config::{self, cosmic_config_derive::CosmicConfigEntry, CosmicConfigEntry},
+    cosmic_config::{self, CosmicConfigEntry, cosmic_config_derive::CosmicConfigEntry},
     theme,
 };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-pub const CONFIG_VERSION: u64 = 1;
 
 #[derive(Clone, CosmicConfigEntry, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[version = 1]

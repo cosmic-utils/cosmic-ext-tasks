@@ -102,3 +102,7 @@ sort-date-desc = Fecha de añadido (Nuevo a Antiguo)
 cause = Causa
 oops-something-wrong = ¡Vaya! Algo salió mal.
 error-title = Tareas - Error
+
+# Desktop and AppStream metadata
+desktop-name = Tareas
+app-keywords = Tareas;Gestión;Todo;Proyecto;Planificador;Organizador;Recordatorio;Lista de verificación;Tarea;Por-hacer;Lista;

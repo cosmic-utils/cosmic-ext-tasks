@@ -1,7 +1,10 @@
 [package]
 name = "tasks"
 version = "0.4.0"
-edition = "2021"
+edition = "2024"
+license = "GPL-3.0-only"
+description = "A simple task management application for the COSMIC desktop"
+repository = "https://github.com/cosmic-ext-orbit/cosmic-ext-tasks"
 
 [dependencies]
 i18n-embed-fl = "0.10.0"
@@ -32,7 +35,10 @@ reqwest = { version = "0.12", default-features = false, features = [
 serde_json = "1"
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
-accounts = { git = "https://github.com/cosmic-utils/accounts", features = ["tasks", "libcosmic"] }
+accounts = { git = "https://github.com/cosmic-ext-orbit/cosmic-ext-accounts", features = ["tasks", "libcosmic"] }
+
+[build-dependencies]
+xdgen = "0.1"
 
 [dependencies.rust-extensions]
 git = "https://github.com/edfloreshz/rust-extensions.git"
@@ -45,8 +51,6 @@ features = [
     "about",
     # Support creating additional application windows.
     "multi-window",
-    # On app startup, focuses an existing instance if the app is already open
-    "single-instance",
     # Uses tokio as the executor for the runtime
     "tokio",
     # Windowing support for X11, Windows, Mac, & Redox
@@ -62,6 +66,8 @@ features = [
     "a11y",
     # Uses cosmic-settings-daemon to watch for config file changes
     "dbus-config",
+    # Focuses an existing instance through D-Bus activation.
+    "single-instance",
     # Add Wayland support to winit
     "wayland",
 ]

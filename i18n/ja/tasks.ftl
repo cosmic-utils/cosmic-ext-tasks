@@ -172,3 +172,7 @@ sync-error = 同期エラー
 sync-conflict-resolved = 「{$title}」の新しいバージョンを保持しました
 reconnect-account = 同期を続けるにはアカウントを再接続してください
 open = 開く
+
+# Desktop and AppStream metadata
+desktop-name = Tasks
+app-keywords = Tasks;管理;Todo;プロジェクト;プランナー;オーガナイザー;リマインダー;チェックリスト;タスク;やること;リスト;

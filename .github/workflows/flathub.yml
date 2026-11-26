@@ -54,20 +54,47 @@ jobs:
       - name: Copy cargo-sources.json into Flathub repo
         run: cp source/flatpak/cargo-sources.json flathub/cargo-sources.json
 
-      - name: Pin manifest to release commit
+      - name: Update manifest for the release
         working-directory: flathub
         env:
           RELEASE_COMMIT: ${{ steps.release_sha.outputs.sha }}
         run: |
           MANIFEST="dev.edfloreshz.Tasks.json"
 
+          assets=res
+          desktop="${MANIFEST%.json}.desktop"
+          metainfo="${MANIFEST%.json}.metainfo.xml"
+          icon="${MANIFEST%.json}.svg"
+          if [[ -d ../source/resources ]]; then
+            assets=resources
+          fi
+          if [[ -f ../source/resources/app.desktop ]]; then
+            desktop=app.desktop
+            metainfo=app.metainfo.xml
+            icon=icon.svg
+          fi
+
+          metadata_dir="$assets"
+          if [[ -f ../source/build.rs ]] && grep -q 'xdgen' ../source/build.rs; then
+            metadata_dir=target/xdgen
+          fi
+
           jq --arg commit "$RELEASE_COMMIT" \
+             --arg desktop "$metadata_dir/$desktop" \
+             --arg metainfo "$metadata_dir/$metainfo" \
+             --arg icon "$assets/icons/hicolor/scalable/apps/$icon" \
              '(.modules[] | select(.name == "tasks") | .sources) |=
                map(
                  if type == "object" and .type == "git" then
                    .commit = $commit
                  else . end
                )
+           | (.modules[] | select(.name == "tasks") | .["build-commands"][]?) |=
+               gsub("(?<![[:alnum:]_./-])(?<relative>\\./)?(?:res|resources|target/xdgen)/(?<path>(?:app|dev\\.edfloreshz\\.Tasks)\\.(?:desktop|metainfo\\.xml)|icons/hicolor/scalable/apps/(?:icon|dev\\.edfloreshz\\.Tasks)\\.svg)";
+                 (.relative // "") +
+                 (if (.path | endswith(".desktop")) then $desktop
+                  elif (.path | endswith(".xml")) then $metainfo
+                  else $icon end))
              ' "$MANIFEST" > "$MANIFEST.tmp"
           mv "$MANIFEST.tmp" "$MANIFEST"
 

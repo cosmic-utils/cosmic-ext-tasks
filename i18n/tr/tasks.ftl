@@ -105,3 +105,7 @@ sort-name-asc = İsim A-Z
 sort-name-desc = İsim Z-A
 sort-date-asc = Eklenme tarihi (Eskiden Yeniye)
 sort-date-desc = Eklenme tarihi (Yeniden Eskiye)
+
+# Desktop and AppStream metadata
+desktop-name = COSMIC Görevler
+app-keywords = Görevler;Yönetim;Todo;Proje;Planlayıcı;Düzenleyici;Hatırlatıcı;Kontrol listesi;Görev;Yapılacak;Liste;

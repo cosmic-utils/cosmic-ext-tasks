@@ -1,13 +1,24 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::collections::HashMap;
 
 use cosmic::{
-    app::{self, Core},
-    iced::{keyboard::Event as KeyEvent, Event, Subscription},
-    widget::{self, calendar::CalendarModel, segmented_button::Entity},
     Application, ApplicationExt, Element,
+    app::{self, Core},
+    iced::{Event, Subscription, keyboard::Event as KeyEvent},
+    widget::{self, calendar::CalendarModel, segmented_button::Entity},
 };
 
-pub use crate::shared::navigation::core::{AppModel, ContextPage, Flags, Message};
+mod context;
+mod flags;
+mod init;
+mod message;
+mod model;
+
+pub use context::ContextPage;
+pub use flags::Flags;
+pub use message::Message;
+pub use model::AppModel;
 
 use crate::{
     config::AppConfig,
@@ -119,7 +130,10 @@ impl Application for AppModel {
                     NavMenuAction::TrashEmptyAll,
                 ));
             } else if favorites_index_opt.is_some()
-                || self.nav.data::<accounts::AccountHeaderMarker>(entity).is_some()
+                || self
+                    .nav
+                    .data::<accounts::AccountHeaderMarker>(entity)
+                    .is_some()
             {
                 return items;
             } else {

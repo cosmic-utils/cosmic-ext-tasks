@@ -10,23 +10,25 @@ flatpak-base-dir := absolute_path(clean(rootdir / flatpak-prefix))
 
 export INSTALL_DIR := base-dir / 'share'
 
-bin-src := 'target' / 'release' / name
+cargo-target-dir := env('CARGO_TARGET_DIR', 'target')
+bin-src := cargo-target-dir / 'release' / name
 bin-dst := base-dir / 'bin' / name
 flatpak-bin-dst := flatpak-base-dir / 'bin' / name
 
 desktop := APPID + '.desktop'
-desktop-src := 'res' / desktop
+desktop-src := cargo-target-dir / 'xdgen' / 'app.desktop'
 desktop-dst := clean(rootdir / prefix) / 'share' / 'applications' / desktop
 flatpak-desktop-dst := clean(rootdir / flatpak-prefix) / 'share' / 'applications' / desktop
 
 metainfo := APPID + '.metainfo.xml'
-metainfo-src := 'res' / metainfo
+metainfo-src := cargo-target-dir / 'xdgen' / 'app.metainfo.xml'
 metainfo-dst := clean(rootdir / prefix) / 'share' / 'metainfo' / metainfo
 flatpak-metainfo-dst := clean(rootdir / flatpak-prefix) / 'share' / 'metainfo' / metainfo
 
-icons-src := 'res' / 'icons' / 'hicolor'
-icons-dst := clean(rootdir / prefix) / 'share' / 'icons' / 'hicolor'
-flatpak-icons-dst := clean(rootdir / flatpak-prefix) / 'share' / 'icons' / 'hicolor'
+icon-dir := 'icons' / 'hicolor' / 'scalable' / 'apps'
+icon-src := 'resources' / icon-dir / 'icon.svg'
+icon-dst := base-dir / 'share' / icon-dir / (APPID + '.svg')
+flatpak-icon-dst := flatpak-base-dir / 'share' / icon-dir / (APPID + '.svg')
 
 # Default recipe which runs `just build-release`
 default: build-release
@@ -44,7 +46,7 @@ clean-dist: clean clean-vendor
 
 # Compiles with debug profile
 build-debug *args:
-    cargo build {{args}}
+    cargo build --locked {{args}}
 
 # Compiles with release profile
 build-release *args: (build-debug '--release' args)
@@ -54,7 +56,7 @@ build-vendored *args: vendor-extract (build-release '--frozen --offline' args)
 
 # Runs a clippy check
 check *args:
-    cargo clippy --all-features {{args}} -- -W clippy::pedantic
+    cargo clippy --all-features --locked {{args}} -- -W clippy::pedantic
 
 # Runs a clippy check with JSON message format
 check-json: (check '--message-format=json')
@@ -65,25 +67,21 @@ dev *args:
 
 # Run with debug logs
 run *args:
-    env RUST_LOG=tasks=info RUST_BACKTRACE=full cargo run --release {{args}}
+    env RUST_LOG=tasks=info RUST_BACKTRACE=full cargo run --release --locked {{args}}
 
 # Installs files
 install:
     install -Dm0755 {{bin-src}} {{bin-dst}}
     install -Dm0644 {{desktop-src}} {{desktop-dst}}
     install -Dm0644 {{metainfo-src}} {{metainfo-dst}}
-    for size in `ls {{icons-src}}`; do \
-        install -Dm0644 "{{icons-src}}/$size/apps/{{APPID}}.svg" "{{icons-dst}}/$size/apps/{{APPID}}.svg"; \
-    done
+    install -Dm0644 {{icon-src}} {{icon-dst}}
 
 # Installs files
 flatpak:
     install -Dm0755 {{bin-src}} {{flatpak-bin-dst}}
     install -Dm0644 {{desktop-src}} {{flatpak-desktop-dst}}
     install -Dm0644 {{metainfo-src}} {{flatpak-metainfo-dst}}
-    for size in `ls {{icons-src}}`; do \
-        install -Dm0644 "{{icons-src}}/$size/apps/{{APPID}}.svg" "{{flatpak-icons-dst}}/$size/apps/{{APPID}}.svg"; \
-    done
+    install -Dm0644 {{icon-src}} {{flatpak-icon-dst}}
 
 # Bump the Cargo package version, commit it, and create an annotated tag.
 tag version:
@@ -136,9 +134,7 @@ uninstall:
     rm {{bin-dst}}
     rm {{desktop-dst}}
     rm {{metainfo-dst}}
-    for size in `ls {{icons-src}}`; do \
-        rm "{{icons-dst}}/$size/apps/{{APPID}}.svg"; \
-    done
+    rm {{icon-dst}}
 
 # Vendor dependencies locally
 vendor:

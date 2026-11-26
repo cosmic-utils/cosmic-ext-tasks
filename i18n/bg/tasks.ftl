@@ -105,3 +105,7 @@ sort-date-desc = Дата на добавяне (Ново към Старо)
 cause = Причина
 oops-something-wrong = Упс! Нещо се обърка.
 error-title = Задачи - Грешка
+
+# Desktop and AppStream metadata
+desktop-name = Задачи
+app-keywords = Задачи;Управление;Задача;Проект;Планировщик;Организатор;Напомняне;Списък;Задача;За-направяне;Списък;

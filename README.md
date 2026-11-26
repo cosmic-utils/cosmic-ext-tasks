@@ -1,30 +1,37 @@
 <div align="center">
   <br>
-  <img src="res/icons/hicolor/scalable/apps/dev.edfloreshz.Tasks.svg" width="150" />
+  <img src="resources/icons/hicolor/scalable/apps/icon.svg" width="150" />
   <h1>Tasks</h1>
 
   <p>A simple task management application for the COSMIC™ desktop</p>
 
-  ![window-light.png](https://raw.githubusercontent.com/edfloreshz/tasks/main/res/screenshots/window-light.png#gh-light-mode-only)
-  ![window-dark.png](https://raw.githubusercontent.com/edfloreshz/tasks/main/res/screenshots/window-dark.png#gh-dark-mode-only)
+  ![window-light.png](resources/screenshots/window-light.png#gh-light-mode-only)
+  ![window-dark.png](resources/screenshots/window-dark.png#gh-dark-mode-only)
 
   <a href='https://flathub.org/apps/dev.edfloreshz.Tasks'>
     <img width='200' alt='Get it on Flathub' src='https://flathub.org/api/badge?locale=en'/>
   </a>
 </div>
 
-# Installation
-```
-git clone https://github.com/edfloreshz/tasks.git
-cd tasks
+## Build and install
+
+```sh
+git clone https://github.com/cosmic-ext-orbit/cosmic-ext-tasks.git
+cd cosmic-ext-tasks
+just
 sudo just install
 ```
 
-# Build
-```
-git clone https://github.com/edfloreshz/tasks.git
-cd tasks
-cargo build
+`just` builds the release binary and generates localized desktop and AppStream
+metadata under `target/xdgen`. Use `just run` to launch Tasks or `just check`
+to run Clippy. The build reads metadata translations from `i18n/*/tasks.ftl`.
+
+## Packaging
+
+```sh
+just vendor
+just build-vendored
+just rootdir=package prefix=/usr install
 ```
 
 ## Accounts
@@ -49,4 +56,4 @@ in plaintext or kept only in memory.
 
 Copyright 2024 © Eduardo Flores
 
-Tasks is released under the terms of the [GPL-3.0](https://github.com/edfloreshz/tasks/blob/main/LICENSE)
+Tasks is released under the terms of the [GPL-3.0](LICENSE)

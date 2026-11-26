@@ -137,3 +137,7 @@ sort-name-desc = Ordre alphabétique invérsé
 sort-date-asc = Date d'ajout (du plus ancien au plus récent)
 sort-date-desc = Date d'ajout (du plus récent au plus ancien)
 sort-manual = Manuel
+
+# Desktop and AppStream metadata
+desktop-name = Tâches
+app-keywords = Tâches;Gestion;Todo;Projet;Planificateur;Organisateur;Rappel;Liste de contrôle;Tâche;À-faire;Liste;

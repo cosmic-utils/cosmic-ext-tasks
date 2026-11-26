@@ -3,9 +3,9 @@ use std::collections::BTreeSet;
 use accounts::Account;
 use cosmic::app;
 
-use crate::{app::Message, shared::navigation::core::AppModel};
+use crate::app::{AppModel, Message};
 
-use super::{manager, AccountsAction};
+use super::{AccountsAction, manager};
 
 fn rediscover() -> app::Task<Message> {
     cosmic::task::message(Message::Accounts(AccountsAction::Discover))

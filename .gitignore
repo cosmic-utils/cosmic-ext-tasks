@@ -22,3 +22,7 @@ target/
 **/.venv
 **/.DS_Store
 .claude/
+
+/.cargo/
+/vendor/
+/vendor.tar

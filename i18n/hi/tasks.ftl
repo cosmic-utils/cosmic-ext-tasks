@@ -105,3 +105,7 @@ sort-name-asc = नाम A-Z
 sort-name-desc = नाम Z-A
 sort-date-asc = जोड़ा गया (पुराना से नया)
 sort-date-desc = जोड़ा गया (नया से पुराना)
+
+# Desktop and AppStream metadata
+desktop-name = कार्य
+app-keywords = कार्य;प्रबंधन;टूडू;प्रोजेक्ट;योजनाकार;व्यवस्थापक;रिमाइंडर;चेकलिस्ट;कार्य;करने-के-लिए;सूची;

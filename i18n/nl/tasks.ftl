@@ -105,3 +105,7 @@ sort-name-asc = Naam A-Z
 sort-name-desc = Naam Z-A
 sort-date-asc = Datum toegevoegd (Oud naar Nieuw)
 sort-date-desc = Datum toegevoegd (Nieuw naar Oud)
+
+# Desktop and AppStream metadata
+desktop-name = Tasks
+app-keywords = Tasks;Beheer;Todo;Project;Planner;Organisator;Herinnering;Checklist;Taak;Te-doen;Lijst;

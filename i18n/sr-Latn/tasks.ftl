@@ -105,3 +105,7 @@ sort-name-asc = Naziv A-Š
 sort-name-desc = Naziv Š-A
 sort-date-asc = Datum dodavanja (Staro ka Novom)
 sort-date-desc = Datum dodavanja (Novo ka Starom)
+
+# Desktop and AppStream metadata
+desktop-name = COSMIC Zadaci
+app-keywords = Zadaci;Upravljanje;Todo;Projekat;Planer;Organizator;Podsetnik;Lista za proveru;Zadatak;Za-uraditi;Lista;

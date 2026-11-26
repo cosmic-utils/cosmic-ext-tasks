@@ -1,13 +1,13 @@
 use std::collections::{HashMap, VecDeque};
 
 use cosmic::{
+    ApplicationExt,
     app::{self, Core},
     iced::core::keyboard::key::Named,
     iced::keyboard::Key,
     iced::keyboard::Modifiers,
     widget,
     widget::menu::key_bind::{KeyBind, Modifier},
-    ApplicationExt,
 };
 
 use crate::{
@@ -20,6 +20,8 @@ use crate::{
 };
 
 use super::{context::ContextPage, flags::Flags, message::Message, model::AppModel};
+
+const APP_ICON: &[u8] = include_bytes!("../../resources/icons/hicolor/scalable/apps/icon.svg");
 
 impl AppModel {
     pub fn init(core: Core, flags: Flags) -> (Self, app::Task<Message>) {
@@ -89,15 +91,15 @@ impl AppModel {
     fn about() -> widget::about::About {
         widget::about::About::default()
             .name(fl!("tasks"))
-            .icon(widget::icon::from_name("dev.edfloreshz.Tasks"))
+            .icon(widget::icon::from_svg_bytes(APP_ICON))
             .version(env!("CARGO_PKG_VERSION"))
             .author("Eduardo Flores")
-            .license("GPL-3.0-only")
+            .license(env!("CARGO_PKG_LICENSE"))
             .links([
-                (fl!("repository"), "https://github.com/cosmic-utils/tasks"),
+                (fl!("repository"), env!("CARGO_PKG_REPOSITORY")),
                 (
                     fl!("support"),
-                    "https://github.com/cosmic-utils/tasks/issues",
+                    concat!(env!("CARGO_PKG_REPOSITORY"), "/issues"),
                 ),
                 (fl!("website"), "https://tasks.edfloreshz.dev"),
             ])

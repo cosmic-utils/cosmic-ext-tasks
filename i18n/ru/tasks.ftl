@@ -105,3 +105,7 @@ sort-name-asc = Имя A-Я
 sort-name-desc = Имя Я-A
 sort-date-asc = Дата добавления (Старое к Новому)
 sort-date-desc = Дата добавления (Новое к Старому)
+
+# Desktop and AppStream metadata
+desktop-name = Задачи COSMIC
+app-keywords = Задачи;Управление;Todo;Проект;Планировщик;Организатор;Напоминание;Чек-лист;Задача;К-выполнению;Список;

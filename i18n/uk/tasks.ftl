@@ -137,3 +137,9 @@ sort-name-desc = Назва Я-A
 sort-date-asc = Спочатку найстаріші
 sort-date-desc = Спочатку найновіші
 sort-manual = Вручну
+
+# Desktop and AppStream metadata
+desktop-name = Завдання
+app-keywords = Tasks;Управління;Todo;Проект;Планувальник;Організатор;Нагадування;Чек-лист;Завдання;До-виконання;Список;
+appstream-name = Завдання
+appstream-summary = Доводьте справи до кінця

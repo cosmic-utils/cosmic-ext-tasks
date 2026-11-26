@@ -105,3 +105,7 @@ sort-name-asc = 名称 A-Z
 sort-name-desc = 名称 Z-A
 sort-date-asc = 添加日期（从旧到新）
 sort-date-desc = 添加日期（从新到旧）
+
+# Desktop and AppStream metadata
+desktop-name = Tasks
+app-keywords = Tasks;管理;Todo;项目;计划器;组织者;提醒;检查清单;任务;待办;列表;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 mod app;
 mod config;
 mod error;
@@ -7,26 +9,13 @@ mod shared;
 
 pub use error::*;
 
-use cosmic::{
-    app::Settings,
-    cosmic_config::{Config, CosmicConfigEntry},
-    iced::Limits,
-    Application,
-};
-use directories::ProjectDirs;
+use cosmic::{app::Settings, iced::Limits};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{
-    app::AppModel,
-    config::{AppConfig, CONFIG_VERSION},
-    shared::store::Store,
-};
+use app::{AppModel, Flags};
 
-pub fn main() -> Result<()> {
-    // Get the system's preferred languages.
+fn main() -> Result<()> {
     let requested_languages = i18n_embed::DesktopLanguageRequester::requested_languages();
-
-    // Enable localizations to be applied.
     i18n::init(&requested_languages);
 
     // Initialize tracing for logging and debugging.
@@ -38,53 +27,11 @@ pub fn main() -> Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    // Determine the project directories for this application.
-    let project = ProjectDirs::from("dev", "edfloreshz", "Tasks")
-        .expect("Failed to determine project directories");
-
-    // Run migrations to ensure old data is converted to the new format before starting the app.
-    let old_base_dir = project
-        .data_dir()
-        .parent()
-        .expect("Failed to determine previous app directory")
-        .join(app::AppModel::APP_ID);
-
-    let new_base_dir = project.data_dir();
-
-    shared::store::migrations::migrate(old_base_dir, new_base_dir)?;
-
-    // Store is used for persistent storage of tasks and app state.
-    let store = Store::open(project.data_dir())?;
-
-    // Ensure the task state registry exists, seeding the built-in states on first run.
-    if let Err(err) = store.states().load_all() {
-        tracing::error!("Error loading task states: {err}");
-    }
-
-    tracing::info!("Project data directory: {:?}", project.data_dir());
-
-    // Config handler for managing the app's configuration.
-    let handler = Config::new(AppModel::APP_ID, CONFIG_VERSION)?;
-
-    // Load the app's configuration, falling back to defaults if there are errors.
-    let config = AppConfig::get_entry(&handler).unwrap_or_else(|(errs, config)| {
-        tracing::info!("errors loading config: {:?}", errs);
-        config
-    });
-
-    // Settings for configuring the application window and iced runtime.
+    let flags = Flags::load()?;
     let settings = Settings::default()
-        .theme(config.app_theme.theme())
+        .theme(flags.config.app_theme.theme())
         .size_limits(Limits::NONE.min_width(350.0).min_height(180.0))
         .debug(false);
 
-    // Get the application flags, which include the config handler, app config, and store.
-    let flags = app::Flags {
-        handler,
-        config,
-        store,
-    };
-
-    // Run the application.
-    cosmic::app::run::<app::AppModel>(settings, flags).map_err(Error::Iced)
+    cosmic::app::run::<AppModel>(settings, flags).map_err(Error::Iced)
 }

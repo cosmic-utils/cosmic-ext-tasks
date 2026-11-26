@@ -105,3 +105,9 @@ sort-name-asc = Název A-Z
 sort-name-desc = Název Z-A
 sort-date-asc = Datum přidání (od nejstarších po nejnovější)
 sort-date-desc = Datum přidání (od nejnovějších po nejstarší)
+
+# Desktop and AppStream metadata
+desktop-name = Úkoly
+app-keywords = Tasks;Správa;Todo;Projekt;Plánovač;Organizátor;Připomínka;Seznam;Úkol;K-dokončení;Seznam;
+appstream-name = Úkoly
+appstream-summary = Dokončete, co jste začali

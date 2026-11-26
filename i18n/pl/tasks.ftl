@@ -186,3 +186,9 @@ sync-failed = Synchronizacja nie powiodła się: {$error}
 sync-conflict-resolved = Zachowaj nową wersję "{$title}"
 reconnect-account = Ponownie połącz z kontem by zachować synchronizację
 open = Otwórz
+
+# Desktop and AppStream metadata
+desktop-name = Tasks
+app-keywords = Tasks;Zarządzanie;Todo;Projekt;Planista;Organizator;Przypomnienie;Lista kontrolna;Zadanie;Do-zrobienia;Lista;
+appstream-name = Zadania
+appstream-summary = Załatw swoje sprawy

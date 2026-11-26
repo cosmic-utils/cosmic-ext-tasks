@@ -105,3 +105,7 @@ sort-name-asc = Nome A-Z
 sort-name-desc = Nome Z-A
 sort-date-asc = Data aggiunta (Vecchio a Nuovo)
 sort-date-desc = Data aggiunta (Nuovo a Vecchio)
+
+# Desktop and AppStream metadata
+desktop-name = Tasks
+app-keywords = Tasks;Gestione;Todo;Progetto;Pianificatore;Organizzatore;Promemoria;Lista di controllo;Attività;Da-fare;Lista;
