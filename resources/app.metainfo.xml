@@ -49,6 +49,11 @@
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/cosmic-ext-orbit/cosmic-ext-tasks/main/resources/icons/hicolor/scalable/apps/icon.svg</icon>
   <launchable type="desktop-id">dev.edfloreshz.Tasks.desktop</launchable>
   <releases>
+    <release version="0.4.2" date="2026-11-27">
+        <description>
+            <p>Brand new app icon! 🎉</p>
+        </description>
+    </release>
     <release version="0.4.1" date="2026-11-26">
         <description>
             <p>Online accounts now use your system’s secure storage on macOS and Windows.</p>
