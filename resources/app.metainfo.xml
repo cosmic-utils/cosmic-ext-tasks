@@ -43,8 +43,8 @@
     </ul>
   </description>
   <branding>
-    <color type="primary" scheme_preference="light">#eaeaff</color>
-    <color type="primary" scheme_preference="dark">#280c4b</color>
+    <color type="primary" scheme_preference="light">#ECE3D5</color>
+    <color type="primary" scheme_preference="dark">#855E39</color>
   </branding>
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/cosmic-ext-orbit/cosmic-ext-tasks/main/resources/icons/hicolor/scalable/apps/icon.svg</icon>
   <launchable type="desktop-id">dev.edfloreshz.Tasks.desktop</launchable>
@@ -256,6 +256,14 @@
       <caption xml:lang="hu">Új lista létrehozása</caption>
       <caption xml:lang="pl">Tworzenie nowej listy</caption>
       <caption xml:lang="uk">Темна тема створення нового списку</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/cosmic-ext-orbit/cosmic-ext-tasks/main/resources/screenshots/about-light.png</image>
+      <caption>About pane</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/cosmic-ext-orbit/cosmic-ext-tasks/main/resources/screenshots/about-dark.png</image>
+      <caption>About pane</caption>
     </screenshot>
   </screenshots>
   <categories>
